@@ -26,7 +26,7 @@ const Home = () => {
                             <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
                                 <button
                                     onClick={() => navigate('/notes')}
-                                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
+                                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 cursor-pointer"
                                 >
                                     Get Started
                                 </button>
