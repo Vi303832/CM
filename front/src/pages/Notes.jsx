@@ -20,7 +20,7 @@ const Notes = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // TODO: Handle form submission
+
         console.log({ title, content, tags: tags.filter(tag => tag.trim() !== '') });
         setIsModalOpen(false);
     };

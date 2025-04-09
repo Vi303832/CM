@@ -19,7 +19,7 @@ const Register = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // TODO: Implement registration logic
+
         console.log('Registration attempt:', formData);
     };
 
