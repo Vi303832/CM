@@ -17,6 +17,9 @@ const Navbar = () => {
                         <Link to="/" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                             Home
                         </Link>
+                        <Link to="/notes" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                            Notes
+                        </Link>
                         <Link to="/login" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                             Login
                         </Link>
@@ -30,4 +33,4 @@ const Navbar = () => {
     );
 };
 
-export default Navbar;
+export default Navbar; 
