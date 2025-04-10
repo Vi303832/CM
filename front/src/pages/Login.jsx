@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -16,10 +17,20 @@ const Login = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // TODO: Implement login logic
-        console.log('Login attempt:', formData);
+        try {
+            const response = await axios.post('http://localhost:5000/api/auth/login', formData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            localStorage.setItem('token', response.data.token);
+            navigate('/');
+        } catch (error) {
+            console.error('Login error:', error);
+        }
     };
 
     return (

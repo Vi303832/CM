@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -17,11 +18,19 @@ const Register = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        console.log('Registration attempt:', formData);
-    };
+
+        try {
+            const response = await axios.post('http://localhost:5000/api/auth/register', formData);
+            navigate('/notes');
+        } catch (err) {
+            console.error('Registration error:', err.response?.data?.message || err.message);
+            // Here you could set an error state to display to the user
+        }
+    }
+
 
     return (
         <div className="h-screen flex flex-col">
@@ -99,4 +108,4 @@ const Register = () => {
     );
 };
 
-export default Register; 
+export default Register;
