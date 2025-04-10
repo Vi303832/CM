@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaStickyNote } from 'react-icons/fa';
+import { checkAuth } from '../middleware/authMiddleware';
+import { useState } from 'react';
+import { FaUser } from "react-icons/fa";
 
 const Navbar = () => {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    useEffect(() => {
+        const x = checkAuth();
+        setIsAuthenticated(x);
+    }, []);
+
     return (
         <nav className="bg-white shadow-lg fixed w-full z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,12 +29,21 @@ const Navbar = () => {
                         <Link to="/notes" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                             Notes
                         </Link>
-                        <Link to="/login" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                            Login
-                        </Link>
-                        <Link to="/register" className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium">
-                            Register
-                        </Link>
+                        {isAuthenticated ? (
+                            <Link to="/user" className="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-600 px-4 py-2 rounded-full transition-colors duration-200 ease-in-out">
+                                <FaUser className="text-lg" />
+                                <span className="text-sm font-medium">Profile</span>
+                            </Link>
+                        ) : (
+                            <>
+                                <Link to="/login" className="text-gray-600 ho   ver:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                                    Login
+                                </Link>
+                                <Link to="/register" className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium">
+                                    Register
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
