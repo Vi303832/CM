@@ -2,7 +2,6 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api';
 
-
 const api = axios.create({
     baseURL: API_URL,
     headers: {
@@ -10,7 +9,6 @@ const api = axios.create({
     }
 });
 
-// Add token to requests if it exists
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -37,6 +35,22 @@ export const authAPI = {
     }
 };
 
+// Profile API
+export const userAPI = {
+    getProfile: async () => {
+        const response = await api.get('/profile');
+        return response.data;
+    },
+    updateProfile: async (userData) => {
+        const response = await api.put('/profile', userData);
+        return response.data;
+    },
+    deleteProfile: async () => {
+        const response = await api.delete('/profile');
+        return response.data;
+    }
+};
+
 // Notes API
 export const notesAPI = {
     createNote: async (noteData) => {
@@ -56,4 +70,3 @@ export const notesAPI = {
         return response.data;
     }
 };
-
