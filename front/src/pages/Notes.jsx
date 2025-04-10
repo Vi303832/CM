@@ -11,6 +11,7 @@ const Notes = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [notes, setNotes] = useState([]);
+    const [editingNote, setEditingNote] = useState(null);
 
     useEffect(() => {
         const fetchNotes = async () => {
@@ -28,7 +29,7 @@ const Notes = () => {
         };
 
         fetchNotes();
-    }, []);
+    }, [notes]);
 
     const handleAddTag = () => {
         setTags([...tags, '']);
@@ -46,31 +47,50 @@ const Notes = () => {
         setTags(newTags.length ? newTags : ['']);
     };
 
+    const handleEditNote = (note) => {
+        setEditingNote(note);
+        setTitle(note.title);
+        setContent(note.content);
+        setTags(note.tags.map(tag => tag.replace('#', '')));
+        setIsModalOpen(true);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
 
         try {
-            await notesAPI.createNote({
+            const noteData = {
                 title,
                 content,
                 tags: tags
                     .filter(tag => tag.trim() !== '')
                     .map(tag => `#${tag.trim()}`)
-            });
+            };
 
-            // Reset form and fetch updated notes
+            let updatedNote;
+            if (editingNote) {
+                // Update existing note
+                updatedNote = await notesAPI.updateNote(editingNote._id, noteData);
+                setNotes(prevNotes => prevNotes.map(note =>
+                    note._id === editingNote._id ? updatedNote : note
+                ));
+            } else {
+                // Create new note
+                updatedNote = await notesAPI.createNote(noteData);
+                setNotes(prevNotes => [...prevNotes, updatedNote]);
+            }
+
+            // Reset form
             setTitle('');
             setContent('');
             setTags(['']);
             setIsModalOpen(false);
-            const response = await notesAPI.getNotes();
-            if (response && response.data) {
-                setNotes(Array.isArray(response.data) ? response.data : []);
-            }
+            setEditingNote(null);
+
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to create note');
+            setError(err.response?.data?.message || 'Failed to save note');
         } finally {
             setIsLoading(false);
         }
@@ -79,10 +99,7 @@ const Notes = () => {
     const handleDeleteNote = async (id) => {
         try {
             await notesAPI.deleteNote(id);
-            const response = await notesAPI.getNotes();
-            if (response && response.data) {
-                setNotes(Array.isArray(response.data) ? response.data : []);
-            }
+            setNotes(prevNotes => prevNotes.filter(note => note._id !== id));
         } catch (err) {
             setError('Failed to delete note');
         }
@@ -91,9 +108,10 @@ const Notes = () => {
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
             <Navbar />
-            <main className="pt-16 flex-1 p-6">
+
+            <main className="h-full  flex flex-grow items-center justify-center  pt-16  p-6">
                 {notes.length === 0 ? (
-                    <div className="h-full flex items-center justify-center">
+                    <div className="h-full flex items-center justify-center ">
                         <div className="text-center">
                             <div className="flex justify-center mb-6">
                                 <FaStickyNote className="text-6xl text-blue-600" />
@@ -123,7 +141,10 @@ const Notes = () => {
                                             >
                                                 <FaTrash />
                                             </button>
-                                            <button className="text-blue-500 hover:text-blue-700 cursor-pointer">
+                                            <button
+                                                onClick={() => handleEditNote(note)}
+                                                className="text-blue-500 hover:text-blue-700 cursor-pointer"
+                                            >
                                                 <FaEdit />
                                             </button>
                                         </div>
@@ -151,7 +172,13 @@ const Notes = () => {
 
             {/* Floating Add Button */}
             <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                    setEditingNote(null);
+                    setTitle('');
+                    setContent('');
+                    setTags(['']);
+                    setIsModalOpen(true);
+                }}
                 className="fixed bottom-8 right-8 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-colors cursor-pointer"
             >
                 <FaPlus className="text-2xl" />
@@ -162,9 +189,14 @@ const Notes = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-xl font-semibold text-gray-800">Add New Note</h3>
+                            <h3 className="text-xl font-semibold text-gray-800">
+                                {editingNote ? 'Edit Note' : 'Add New Note'}
+                            </h3>
                             <button
-                                onClick={() => setIsModalOpen(false)}
+                                onClick={() => {
+                                    setIsModalOpen(false);
+                                    setEditingNote(null);
+                                }}
                                 className="text-gray-500 hover:text-gray-700 cursor-pointer"
                             >
                                 <FaTimes className="text-xl" />
@@ -240,7 +272,7 @@ const Notes = () => {
                                     disabled={isLoading}
                                     className={`bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors cursor-pointer ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    {isLoading ? 'Saving...' : 'Save Note'}
+                                    {isLoading ? 'Saving...' : (editingNote ? 'Update Note' : 'Save Note')}
                                 </button>
                             </div>
                         </form>
@@ -251,4 +283,4 @@ const Notes = () => {
     );
 };
 
-export default Notes; 
+export default Notes;

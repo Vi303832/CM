@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 
 const generateToken = (id) => {
@@ -9,7 +10,7 @@ const generateToken = (id) => {
 };
 
 export const register = async (req, res) => {
-   
+
     try {
         const { username, email, password } = req.body;
 
@@ -64,5 +65,15 @@ export const login = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+export const logout = async (req, res) => {
+    try {
+        // Token'ı geçersiz kılmak için blacklist'e ekleyebilirsiniz
+        // Şimdilik sadece başarılı yanıt dönüyoruz
+        res.status(200).json({ message: 'Logged out successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error logging out' });
     }
 }; 

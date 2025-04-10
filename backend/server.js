@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { register, login } from './controllers/authController.js';
+import { register, login, logout } from './controllers/authController.js';
 import { createNote, getNotes, updateNote, deleteNote } from './controllers/noteController.js';
 import profileRoutes from './routes/profileRoutes.js';
 import { protect } from './middleware/authMiddleware.js';
@@ -22,6 +22,7 @@ mongoose.connect(process.env.MONGODB_URI)
 // Auth Routes
 app.post('/api/auth/register', register);
 app.post('/api/auth/login', login);
+app.post('/api/auth/logout', logout);
 
 // Profile Routes
 app.use('/api/profile', profileRoutes);
