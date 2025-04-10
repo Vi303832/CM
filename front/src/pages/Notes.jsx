@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { FaStickyNote, FaPlus, FaTimes } from 'react-icons/fa';
+import { notesAPI } from '../api';
 
 const Notes = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [tags, setTags] = useState(['']);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     const handleAddTag = () => {
         setTags([...tags, '']);
@@ -18,12 +21,28 @@ const Notes = () => {
         setTags(newTags);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
+        setError(null);
 
-        console.log({ title, content, tags: tags.filter(tag => tag.trim() !== '') });
+        try {
+            await notesAPI.createNote({
+                title,
+                content,
+                tags: tags.filter(tag => tag.trim() !== '')
+            });
 
-        setIsModalOpen(false);
+            // Reset form
+            setTitle('');
+            setContent('');
+            setTags(['']);
+            setIsModalOpen(false);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to create note');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -64,6 +83,11 @@ const Notes = () => {
                                 <FaTimes className="text-xl" />
                             </button>
                         </div>
+                        {error && (
+                            <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
+                                {error}
+                            </div>
+                        )}
                         <form onSubmit={handleSubmit}>
                             <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
@@ -117,9 +141,10 @@ const Notes = () => {
                             <div className="flex justify-end">
                                 <button
                                     type="submit"
-                                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors cursor-pointer"
+                                    disabled={isLoading}
+                                    className={`bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors cursor-pointer ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    Save Note
+                                    {isLoading ? 'Saving...' : 'Save Note'}
                                 </button>
                             </div>
                         </form>
