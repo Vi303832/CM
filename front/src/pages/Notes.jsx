@@ -22,6 +22,7 @@ const Notes = () => {
         e.preventDefault();
 
         console.log({ title, content, tags: tags.filter(tag => tag.trim() !== '') });
+
         setIsModalOpen(false);
     };
 
