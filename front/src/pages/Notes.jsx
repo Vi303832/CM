@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag } from 'react-icons/fa';
+import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch } from 'react-icons/fa';
 import { notesAPI } from '../api';
 
 const Notes = () => {
@@ -14,6 +14,7 @@ const Notes = () => {
     const [notes, setNotes] = useState([]);
     const [editingNote, setEditingNote] = useState(null);
     const [displayNote, setDisplayNote] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchNotes = async () => {
@@ -120,11 +121,34 @@ const Notes = () => {
         }
     };
 
+    const filteredNotes = notes.filter(note => {
+        const query = searchQuery.toLowerCase();
+        const titleMatch = note.title.toLowerCase().includes(query);
+        const tagMatch = note.tags.some(tag => tag.toLowerCase().includes(query));
+        return titleMatch || tagMatch;
+    });
+
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
             <Navbar />
 
-            <main className="flex-grow pt-16 p-6">
+            <main className="flex-grow pt-24 p-6">
+                {/* Search Bar */}
+                <div className="max-w-2xl mx-auto mb-12 px-4">
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Search notes by title or tags..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300"
+                        />
+                        <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                            <FaSearch className="text-gray-400 text-lg" />
+                        </div>
+                    </div>
+                </div>
+
                 {!notes || notes.length === 0 ? (
                     <div className="h-full flex items-center justify-center">
                         <div className="text-center">
@@ -141,49 +165,55 @@ const Notes = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full max-w-7xl mx-auto px-4">
-                        {notes.map((note) => (
-                            <div
-                                key={note._id}
-                                onClick={() => handleCardClick(note)}
-                                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-[300px] flex flex-col cursor-pointer"
-                            >
-                                <div className="p-6 flex flex-col h-full">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <h3 className="text-xl font-semibold text-gray-800 truncate max-w-[250px] sm:max-w-[200px]">{note.title}</h3>
-                                        <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
-                                            <button
-                                                onClick={() => handleDeleteNote(note._id)}
-                                                className="text-red-500 hover:text-red-700 cursor-pointer"
-                                            >
-                                                <FaTrash />
-                                            </button>
-                                            <button
-                                                onClick={(e) => handleEditClick(note, e)}
-                                                className="text-blue-500 hover:text-blue-700 cursor-pointer"
-                                            >
-                                                <FaEdit />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="flex-grow overflow-hidden">
-                                        <p className="text-gray-600 whitespace-pre-wrap line-clamp-6 sm:line-clamp-8 overflow-hidden text-ellipsis">{note.content}</p>
-                                    </div>
-                                    {note.tags && Array.isArray(note.tags) && note.tags.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 mt-4 overflow-hidden">
-                                            {note.tags.map((tag, index) => (
-                                                <span
-                                                    key={index}
-                                                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate max-w-[100px] sm:max-w-[120px]"
-                                                >
-                                                    <FaTag className="mr-1 flex-shrink-0" />
-                                                    <span className="truncate">{tag}</span>
-                                                </span>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                        {filteredNotes.length === 0 ? (
+                            <div className="col-span-full text-center py-8">
+                                <p className="text-gray-600 text-lg">No notes found matching your search.</p>
                             </div>
-                        ))}
+                        ) : (
+                            filteredNotes.map((note) => (
+                                <div
+                                    key={note._id}
+                                    onClick={() => handleCardClick(note)}
+                                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-[300px] flex flex-col cursor-pointer"
+                                >
+                                    <div className="p-6 flex flex-col h-full">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <h3 className="text-xl font-semibold text-gray-800 truncate max-w-[250px] sm:max-w-[200px]">{note.title}</h3>
+                                            <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+                                                <button
+                                                    onClick={() => handleDeleteNote(note._id)}
+                                                    className="text-red-500 hover:text-red-700 cursor-pointer"
+                                                >
+                                                    <FaTrash />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleEditClick(note, e)}
+                                                    className="text-blue-500 hover:text-blue-700 cursor-pointer"
+                                                >
+                                                    <FaEdit />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="flex-grow overflow-hidden">
+                                            <p className="text-gray-600 whitespace-pre-wrap line-clamp-6 sm:line-clamp-8 overflow-hidden text-ellipsis">{note.content}</p>
+                                        </div>
+                                        {note.tags && Array.isArray(note.tags) && note.tags.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 mt-4 overflow-hidden">
+                                                {note.tags.map((tag, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate max-w-[100px] sm:max-w-[120px]"
+                                                    >
+                                                        <FaTag className="mr-1 flex-shrink-0" />
+                                                        <span className="truncate">{tag}</span>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 )}
 
