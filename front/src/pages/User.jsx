@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaEdit, FaSave, FaTimes, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaCog, FaLock, FaEnvelope, FaUserEdit } from 'react-icons/fa';
 import { authAPI, userAPI } from '../api';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 const User = () => {
     const [user, setUser] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [activeSection, setActiveSection] = useState('profile');
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -22,7 +24,6 @@ const User = () => {
         const fetchUserData = async () => {
             try {
                 const userData = await userAPI.getProfile();
-                console.log(userData);
                 setUser(userData);
                 setFormData({
                     name: userData.name,
@@ -96,164 +97,208 @@ const User = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto">
-                <div className="bg-white shadow rounded-lg overflow-hidden">
-                    {/* Header */}
-                    <div className="bg-blue-600 px-6 py-8">
+        <div className="min-h-screen flex flex-col bg-gray-50">
+            <Navbar />
+
+            <div className="flex flex-1 pt-16">
+                {/* Sidebar */}
+                <div className="w-72 bg-white shadow-lg border-r border-gray-200">
+                    <div className="p-6 border-b border-gray-200">
                         <div className="flex items-center space-x-4">
-                            <div className="bg-white p-3 rounded-full">
+                            <div className="bg-blue-100 p-3 rounded-full shadow-sm">
                                 <FaUser className="text-blue-600 text-2xl" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-white">{user.name}</h1>
-                                <p className="text-blue-100">{user.email}</p>
+                                <h2 className="text-lg font-semibold text-gray-800">{user.name}</h2>
+                                <p className="text-sm text-gray-500 truncate max-w-[180px]">{user.email}</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="px-6 py-8">
+                    <nav className="p-4 space-y-2">
+                        <button
+                            onClick={() => setActiveSection('profile')}
+                            className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 cursor-pointer ${activeSection === 'profile'
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                }`}
+                        >
+                            <FaUserEdit className="text-lg" />
+                            <span className="font-medium">Profile</span>
+                        </button>
+
+                        <button
+                            onClick={() => setActiveSection('security')}
+                            className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 cursor-pointer ${activeSection === 'security'
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                }`}
+                        >
+                            <FaLock className="text-lg" />
+                            <span className="font-medium">Security</span>
+                        </button>
+
+                        <div className="pt-4 mt-4 border-t border-gray-200">
+                            <button
+                                onClick={handleLogout}
+                                className="w-full flex items-center space-x-3 p-3 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 cursor-pointer"
+                            >
+                                <FaSignOutAlt className="text-lg" />
+                                <span className="font-medium">Logout</span>
+                            </button>
+                        </div>
+                    </nav>
+                </div>
+
+                {/* Main Content */}
+                <div className="flex-1 p-8 bg-gray-50">
+                    <div className="max-w-3xl mx-auto">
                         {error && (
-                            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+                            <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg shadow-sm">
                                 {error}
                             </div>
                         )}
 
                         {success && (
-                            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
+                            <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-lg shadow-sm">
                                 {success}
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit}>
-                            <div className="space-y-6">
-                                {/* Name Field */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Name</label>
-                                    <div className="mt-1">
+                        <div className="bg-white rounded-lg shadow p-8">
+                            <div className="flex justify-between items-center mb-8">
+                                <h2 className="text-2xl font-semibold text-gray-800">
+                                    {activeSection === 'profile' ? 'Profile Settings' : 'Security Settings'}
+                                </h2>
+                                {!isEditing && (
+                                    <button
+                                        onClick={() => setIsEditing(true)}
+                                        className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 cursor-pointer transition-colors duration-200"
+                                    >
+                                        <FaEdit />
+                                        <span className="font-medium">Edit</span>
+                                    </button>
+                                )}
+                            </div>
+
+                            <form onSubmit={handleSubmit}>
+                                <div className="space-y-6">
+                                    {/* Name Field */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Name
+                                        </label>
                                         <input
                                             type="text"
                                             name="name"
                                             value={formData.name}
                                             onChange={handleInputChange}
                                             disabled={!isEditing}
-                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100"
+                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-colors duration-200"
                                         />
                                     </div>
-                                </div>
 
-                                {/* Email Field */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                                    <div className="mt-1">
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={formData.email}
-                                            disabled
-                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100"
-                                        />
+                                    {/* Email Field */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Email
+                                        </label>
+                                        <div className="flex items-center">
+                                            <FaEnvelope className="text-gray-400 mr-2" />
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                value={formData.email}
+                                                disabled
+                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100"
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Password Fields (only show when editing) */}
-                                {isEditing && (
-                                    <>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Current Password</label>
-                                            <div className="mt-1">
-                                                <input
-                                                    type="password"
-                                                    name="currentPassword"
-                                                    value={formData.currentPassword}
-                                                    onChange={handleInputChange}
-                                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">New Password</label>
-                                            <div className="mt-1">
-                                                <input
-                                                    type="password"
-                                                    name="newPassword"
-                                                    value={formData.newPassword}
-                                                    onChange={handleInputChange}
-                                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                                            <div className="mt-1">
-                                                <input
-                                                    type="password"
-                                                    name="confirmPassword"
-                                                    value={formData.confirmPassword}
-                                                    onChange={handleInputChange}
-                                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                />
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="mt-6 flex justify-between">
-                                <button
-                                    type="button"
-                                    onClick={handleLogout}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                >
-                                    <FaSignOutAlt className="mr-2" />
-                                    Logout
-                                </button>
-                                <div className="flex space-x-3">
-                                    {isEditing ? (
+                                    {/* Password Fields */}
+                                    {isEditing && activeSection === 'security' && (
                                         <>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setIsEditing(false);
-                                                    setFormData({
-                                                        name: user.name,
-                                                        email: user.email,
-                                                        currentPassword: '',
-                                                        newPassword: '',
-                                                        confirmPassword: ''
-                                                    });
-                                                }}
-                                                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                            >
-                                                <FaTimes className="mr-2" />
-                                                Cancel
-                                            </button>
-                                            <button
-                                                type="submit"
-                                                disabled={isLoading}
-                                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                                            >
-                                                <FaSave className="mr-2" />
-                                                {isLoading ? 'Saving...' : 'Save Changes'}
-                                            </button>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Current Password
+                                                </label>
+                                                <div className="flex items-center">
+                                                    <FaLock className="text-gray-400 mr-2" />
+                                                    <input
+                                                        type="password"
+                                                        name="currentPassword"
+                                                        value={formData.currentPassword}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    New Password
+                                                </label>
+                                                <div className="flex items-center">
+                                                    <FaLock className="text-gray-400 mr-2" />
+                                                    <input
+                                                        type="password"
+                                                        name="newPassword"
+                                                        value={formData.newPassword}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Confirm New Password
+                                                </label>
+                                                <div className="flex items-center">
+                                                    <FaLock className="text-gray-400 mr-2" />
+                                                    <input
+                                                        type="password"
+                                                        name="confirmPassword"
+                                                        value={formData.confirmPassword}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                                                    />
+                                                </div>
+                                            </div>
                                         </>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsEditing(true)}
-                                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                        >
-                                            <FaEdit className="mr-2" />
-                                            Edit Profile
-                                        </button>
                                     )}
                                 </div>
-                            </div>
-                        </form>
+
+                                {/* Action Buttons */}
+                                {isEditing && (
+                                    <div className="mt-8 flex justify-end space-x-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsEditing(false);
+                                                setFormData({
+                                                    name: user.name,
+                                                    email: user.email,
+                                                    currentPassword: '',
+                                                    newPassword: '',
+                                                    confirmPassword: ''
+                                                });
+                                            }}
+                                            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={isLoading}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer transition-colors duration-200"
+                                        >
+                                            {isLoading ? 'Saving...' : 'Save Changes'}
+                                        </button>
+                                    </div>
+                                )}
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
