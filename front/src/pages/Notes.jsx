@@ -25,12 +25,12 @@ const Notes = () => {
         const fetchNotes = async () => {
             try {
                 const response = await notesAPI.getNotes();
-                console.log('API Response:', response);
+
                 const notesData = response && Array.isArray(response) ? response : [];
                 setNotes(notesData);
-                console.log('Notes length after setting:', notesData.length);
+
             } catch (err) {
-                console.error('Fetch notes error:', err);
+
                 setError('Failed to fetch notes');
                 setNotes([]);
             }
