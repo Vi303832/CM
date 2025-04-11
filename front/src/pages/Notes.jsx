@@ -187,7 +187,7 @@ const Notes = () => {
                         <div className="flex flex-wrap gap-4 justify-center">
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 rounded-full shadow-sm hover:border-gray-300 transition-all duration-200"
+                                className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 rounded-full shadow-sm hover:border-gray-300 transition-all duration-200 cursor-pointer"
                             >
                                 <FaFilter className="text-gray-600" />
                                 <span className="text-gray-700">Filters</span>
@@ -196,12 +196,12 @@ const Notes = () => {
                             <select
                                 value={sortOption}
                                 onChange={(e) => setSortOption(e.target.value)}
-                                className="px-4 py-2 bg-white border-2 border-gray-200 rounded-full shadow-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                className="px-4 py-2 bg-white border-2 border-gray-200 rounded-full shadow-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 cursor-pointer text-gray-700"
                             >
-                                <option value="newest">Newest First</option>
-                                <option value="oldest">Oldest First</option>
-                                <option value="title-asc">Title (A-Z)</option>
-                                <option value="title-desc">Title (Z-A)</option>
+                                <option value="newest" className="text-gray-700">Newest First</option>
+                                <option value="oldest" className="text-gray-700">Oldest First</option>
+                                <option value="title-asc" className="text-gray-700">Title (A-Z)</option>
+                                <option value="title-desc" className="text-gray-700">Title (Z-A)</option>
                             </select>
                         </div>
 
@@ -212,7 +212,7 @@ const Notes = () => {
                                     onClick={() => setSelectedTag('all')}
                                     className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${selectedTag === 'all'
                                         ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer'
                                         }`}
                                 >
                                     All
@@ -223,7 +223,7 @@ const Notes = () => {
                                         onClick={() => setSelectedTag(tag)}
                                         className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${selectedTag === tag
                                             ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer'
                                             }`}
                                     >
                                         {tag}
