@@ -304,13 +304,13 @@ const Notes = () => {
 
                         {/* Pagination */}
                         {totalPages > 1 && (
-                            <div className="flex justify-center items-center mt-8 gap-2">
+                            <div className="flex justify-center items-center mt-8 gap-2  ">
                                 <button
                                     onClick={() => paginate(currentPage - 1)}
                                     disabled={currentPage === 1}
                                     className={`p-2 rounded-full ${currentPage === 1
                                         ? 'text-gray-400 cursor-not-allowed'
-                                        : 'text-gray-600 hover:bg-gray-100'
+                                        : 'text-gray-600 hover:bg-gray-100 cursor-pointer'
                                         }`}
                                 >
                                     <FaChevronLeft />
@@ -322,7 +322,7 @@ const Notes = () => {
                                         onClick={() => paginate(number)}
                                         className={`w-8 h-8 rounded-full ${currentPage === number
                                             ? 'bg-blue-600 text-white'
-                                            : 'text-gray-600 hover:bg-gray-100'
+                                            : 'text-gray-600 hover:bg-gray-100 cursor-pointer'
                                             }`}
                                     >
                                         {number}
@@ -334,7 +334,7 @@ const Notes = () => {
                                     disabled={currentPage === totalPages}
                                     className={`p-2 rounded-full ${currentPage === totalPages
                                         ? 'text-gray-400 cursor-not-allowed'
-                                        : 'text-gray-600 hover:bg-gray-100'
+                                        : 'text-gray-600 hover:bg-gray-100 cursor-pointer'
                                         }`}
                                 >
                                     <FaChevronRight />
