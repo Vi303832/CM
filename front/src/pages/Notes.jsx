@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight, FaPencilAlt } from 'react-icons/fa';
 import { notesAPI } from '../api';
 import { ToastContainer, toast } from 'react-toastify';
+import { useRef } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Notes = () => {
@@ -22,6 +23,85 @@ const Notes = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const notesPerPage = 8;
+    const [isDrawingModalOpen, setIsDrawingModalOpen] = useState(false);
+    const [drawingData, setDrawingData] = useState('');
+
+
+    // First, let's add state to track drawing status
+    const [isDrawing, setIsDrawing] = useState(false);
+    const canvasRef = useRef(null);
+    const contextRef = useRef(null);
+
+    // Add these functions before the return statement
+    const initializeCanvas = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        // Set canvas dimensions with higher resolution for better quality
+        canvas.width = canvas.offsetWidth * 2;
+        canvas.height = canvas.offsetHeight * 2;
+        canvas.style.width = `${canvas.offsetWidth}px`;
+        canvas.style.height = `${canvas.offsetHeight}px`;
+
+        const context = canvas.getContext("2d");
+        context.scale(2, 2); // Scale for better resolution
+        context.lineCap = "round";
+        context.strokeStyle = "black";
+        context.lineWidth = 5;
+        contextRef.current = context;
+    };
+
+    const startDrawing = ({ nativeEvent }) => {
+        const { offsetX, offsetY } = nativeEvent.touches ?
+            {
+                offsetX: nativeEvent.touches[0].clientX - nativeEvent.target.offsetLeft,
+                offsetY: nativeEvent.touches[0].clientY - nativeEvent.target.offsetTop
+            } :
+            nativeEvent;
+
+        contextRef.current.beginPath();
+        contextRef.current.moveTo(offsetX, offsetY);
+        setIsDrawing(true);
+    };
+
+    const finishDrawing = () => {
+        contextRef.current.closePath();
+        setIsDrawing(false);
+        // Save the canvas data to state when drawing is finished
+        const canvas = canvasRef.current;
+        setDrawingData(canvas.toDataURL());
+    };
+
+    const draw = ({ nativeEvent }) => {
+        if (!isDrawing) return;
+
+        const { offsetX, offsetY } = nativeEvent.touches ?
+            {
+                offsetX: nativeEvent.touches[0].clientX - nativeEvent.target.offsetLeft,
+                offsetY: nativeEvent.touches[0].clientY - nativeEvent.target.offsetTop
+            } :
+            nativeEvent;
+
+        contextRef.current.lineTo(offsetX, offsetY);
+        contextRef.current.stroke();
+    };
+
+    const clearCanvas = () => {
+        const canvas = canvasRef.current;
+        const context = canvas.getContext("2d");
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        setDrawingData('');
+    };
+
+    // Use useEffect to initialize the canvas when modal opens
+    useEffect(() => {
+        if (isDrawingModalOpen) {
+            setTimeout(initializeCanvas, 100); // Small delay to ensure canvas is in the DOM
+        }
+    }, [isDrawingModalOpen]);
+
+
+
 
     useEffect(() => {
         const fetchNotes = async () => {
@@ -137,6 +217,33 @@ const Notes = () => {
         } catch (err) {
             toast.error('Failed to delete note');
             setError('Failed to delete note');
+        }
+    };
+
+    const handleDrawingSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const noteData = {
+                title: 'Drawing Note',
+                content: drawingData,
+                tags: ['#drawing'],
+                isDrawing: true
+            };
+
+            const newNote = await notesAPI.createNote(noteData);
+            setNotes(prevNotes => [...prevNotes, newNote]);
+            toast.success('Drawing note created successfully');
+            setIsDrawingModalOpen(false);
+            setDrawingData('');
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to save drawing note';
+            toast.error(errorMessage);
+            setError(errorMessage);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -357,19 +464,29 @@ const Notes = () => {
                     </>
                 )}
 
-                {/* Floating Add Button */}
-                <button
-                    onClick={() => {
-                        setEditingNote(null);
-                        setTitle('');
-                        setContent('');
-                        setTags(['']);
-                        setIsModalOpen(true);
-                    }}
-                    className="fixed bottom-8 right-8 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-colors cursor-pointer"
-                >
-                    <FaPlus className="text-2xl" />
-                </button>
+                {/* Floating Action Buttons */}
+                <div className="fixed bottom-8 right-8 flex flex-col gap-4">
+                    <button
+                        onClick={() => setIsDrawingModalOpen(true)}
+                        className="bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 transition-colors cursor-pointer"
+                        title="Add Drawing Note"
+                    >
+                        <FaPencilAlt className="text-2xl" />
+                    </button>
+                    <button
+                        onClick={() => {
+                            setEditingNote(null);
+                            setTitle('');
+                            setContent('');
+                            setTags(['']);
+                            setIsModalOpen(true);
+                        }}
+                        className="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-colors cursor-pointer"
+                        title="Add Text Note"
+                    >
+                        <FaPlus className="text-2xl" />
+                    </button>
+                </div>
 
                 {/* Display Modal */}
                 {isDisplayModalOpen && displayNote && (
@@ -514,6 +631,55 @@ const Notes = () => {
                                         className={`bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors cursor-pointer ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         {isLoading ? 'Saving...' : (editingNote ? 'Update Note' : 'Save Note')}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Add Drawing Modal */}
+                {isDrawingModalOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-xl font-semibold text-gray-800">Add Drawing Note</h3>
+                                <button
+                                    onClick={() => setIsDrawingModalOpen(false)}
+                                    className="text-gray-500 hover:text-gray-700 cursor-pointer"
+                                >
+                                    <FaTimes className="text-xl" />
+                                </button>
+                            </div>
+                            <form onSubmit={handleDrawingSubmit}>
+                                <div className="mb-4">
+                                    <canvas
+                                        ref={canvasRef}
+                                        id="drawingCanvas"
+                                        className="border-2 border-gray-300 rounded-lg w-full h-[400px]"
+                                        onMouseDown={startDrawing}
+                                        onMouseUp={finishDrawing}
+                                        onMouseMove={draw}
+                                        onMouseLeave={finishDrawing}
+                                        onTouchStart={startDrawing}
+                                        onTouchEnd={finishDrawing}
+                                        onTouchMove={draw}
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={clearCanvas}
+                                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                                    >
+                                        Clear
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                    >
+                                        Save Drawing
                                     </button>
                                 </div>
                             </form>
