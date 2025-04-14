@@ -401,7 +401,17 @@ const Notes = () => {
                                                 </div>
                                             </div>
                                             <div className="flex-grow overflow-hidden">
-                                                <p className="text-gray-600 whitespace-pre-wrap line-clamp-6 sm:line-clamp-8 overflow-hidden text-ellipsis">{note.content}</p>
+                                                {note.content && note.content.startsWith('data:image') ? (
+                                                    <img
+                                                        src={note.content}
+                                                        alt="Drawing"
+                                                        className="w-full h-32 object-contain"
+                                                    />
+                                                ) : (
+                                                    <p className="text-gray-600 whitespace-pre-wrap line-clamp-6 sm:line-clamp-8 overflow-hidden text-ellipsis">
+                                                        {note.content}
+                                                    </p>
+                                                )}
                                             </div>
                                             {note.tags && Array.isArray(note.tags) && note.tags.length > 0 && (
                                                 <div className="flex flex-wrap gap-2 mt-4 overflow-hidden">
@@ -514,7 +524,17 @@ const Notes = () => {
                             </div>
                             <div className="mb-8">
                                 <div className="bg-gray-50 rounded-lg p-6">
-                                    <p className="text-gray-700 whitespace-pre-wrap text-lg leading-relaxed">{displayNote.content}</p>
+                                    {displayNote.content && displayNote.content.startsWith('data:image') ? (
+                                        <img
+                                            src={displayNote.content}
+                                            alt="Drawing"
+                                            className="w-full rounded-lg"
+                                        />
+                                    ) : (
+                                        <p className="text-gray-700 whitespace-pre-wrap text-lg leading-relaxed">
+                                            {displayNote.content}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                             {displayNote.tags && Array.isArray(displayNote.tags) && displayNote.tags.length > 0 && (
@@ -581,13 +601,26 @@ const Notes = () => {
                                     <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="content">
                                         Content
                                     </label>
-                                    <textarea
-                                        id="content"
-                                        value={content}
-                                        onChange={(e) => setContent(e.target.value)}
-                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32 resize-none"
-                                        required
-                                    />
+                                    {editingNote && editingNote.content && editingNote.content.startsWith('data:image') ? (
+                                        <div className="mb-4">
+                                            <img
+                                                src={editingNote.content}
+                                                alt="Drawing"
+                                                className="w-full rounded border border-gray-200"
+                                            />
+                                            <p className="text-sm text-gray-500 mt-2">
+                                                Drawing notes cannot be edited. Please create a new drawing if needed.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <textarea
+                                            id="content"
+                                            value={content}
+                                            onChange={(e) => setContent(e.target.value)}
+                                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32 resize-none"
+                                            required
+                                        />
+                                    )}
                                 </div>
                                 <div className="mb-4">
                                     <div className="flex justify-between items-center mb-2">
