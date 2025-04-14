@@ -18,7 +18,13 @@ const noteSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    }
+    },
+    color: {
+        type: String,
+
+
+    },
+
 }, {
     timestamps: true
 });

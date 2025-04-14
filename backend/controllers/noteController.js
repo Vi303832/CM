@@ -3,12 +3,13 @@ import Note from '../models/Note.js';
 // Create Note
 export const createNote = async (req, res) => {
     try {
-        const { title, content, tags } = req.body;
+        const { title, content, tags, color } = req.body;
         const note = await Note.create({
             title,
             content,
             tags: tags.filter(tag => tag.trim() !== ''),
-            user: req.user._id
+            user: req.user._id,
+            color,
         });
         res.status(201).json(note);
     } catch (error) {

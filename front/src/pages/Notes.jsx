@@ -24,6 +24,7 @@ const Notes = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const notesPerPage = 8;
     const [selectedColor, setSelectedColor] = useState('black');
+    const [selectedBoxColor, setSelectedBoxColor] = useState('white');
     const [isDrawingModalOpen, setIsDrawingModalOpen] = useState(false);
     const [drawingData, setDrawingData] = useState('');
 
@@ -39,6 +40,14 @@ const Notes = () => {
         { name: 'Red', value: '#dc2626' },
         { name: 'Green', value: '#16a34a' },
     ];
+    const boxcolors = [
+        { name: 'White', value: 'white' },
+        { name: 'Blue', value: '#2563eb' },
+        { name: 'Red', value: '#dc2626' },
+        { name: 'Green', value: '#16a34a' },
+    ];
+
+
 
     // Add these functions before the return statement
     const initializeCanvas = () => {
@@ -127,6 +136,19 @@ const Notes = () => {
 
 
 
+    const getNoteColorClass = (color) => {
+        switch (color) {
+            case 'white': return 'bg-white';
+            case '#2563eb': return 'bg-blue-600';
+            case '#dc2626': return 'bg-red-600';
+            case '#16a34a': return 'bg-green-600';
+            case 'black': return 'bg-black';
+            default: return 'bg-white';
+        }
+    };
+
+
+
 
     useEffect(() => {
         const fetchNotes = async () => {
@@ -204,12 +226,16 @@ const Notes = () => {
         setError(null);
 
         try {
+            console.log(selectedBoxColor)
             const noteData = {
                 title,
                 content,
+
                 tags: tags
                     .filter(tag => tag.trim() !== '')
-                    .map(tag => `#${tag.trim()}`)
+                    .map(tag => `#${tag.trim()}`),
+                color: selectedBoxColor,
+
             };
 
             let updatedNote;
@@ -221,7 +247,7 @@ const Notes = () => {
                 ));
                 toast.success('Note updated successfully');
             } else {
-                // Create new note
+                console.log(noteData)
                 updatedNote = await notesAPI.createNote(noteData);
                 setNotes(prevNotes => [...prevNotes, updatedNote]);
                 toast.success('Note created successfully');
@@ -233,6 +259,7 @@ const Notes = () => {
             setTags(['']);
             setIsModalOpen(false);
             setEditingNote(null);
+            setSelectedColor("white")
 
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Failed to save note';
@@ -266,7 +293,8 @@ const Notes = () => {
                 tags: tags
                     .filter(tag => tag.trim() !== '')
                     .map(tag => `#${tag.trim()}`),
-                isDrawing: true
+                isDrawing: true,
+                color: selectedColor,
             };
 
             if (editingNote) {
@@ -443,7 +471,7 @@ const Notes = () => {
                                     <div
                                         key={note._id}
                                         onClick={() => handleCardClick(note)}
-                                        className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-[300px] flex flex-col cursor-pointer"
+                                        className={`${getNoteColorClass(note.color)} rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-[300px] flex flex-col cursor-pointer`}
                                     >
                                         <div className="p-6 flex flex-col h-full">
                                             <div className="flex justify-between items-start mb-4">
@@ -541,7 +569,7 @@ const Notes = () => {
                 <div className="fixed bottom-8 right-8 flex flex-col gap-4">
                     <button
                         onClick={() => setIsDrawingModalOpen(true)}
-                        className="bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 transition-colors cursor-pointer"
+                        className="bg-neutral-800 text-white p-4 rounded-full shadow-lg hover:bg-neutral-950 transition-colors cursor-pointer"
                         title="Add Drawing Note"
                     >
                         <FaPencilAlt className="text-2xl" />
@@ -649,6 +677,7 @@ const Notes = () => {
                                             {title.length}/50
                                         </span>
                                     </div>
+
                                     <input
                                         type="text"
                                         id="title"
@@ -658,6 +687,24 @@ const Notes = () => {
                                         required
                                         maxLength={50}
                                     />
+                                </div>
+                                <div className="flex gap-3">
+                                    {boxcolors.map((color) => (
+                                        <button
+                                            key={color.value}
+                                            type="button"
+                                            onClick={() => setSelectedBoxColor(color.value)}
+                                            className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${selectedBoxColor === color.value
+                                                ? 'border-gray-600 scale-110'
+                                                : 'border-gray-200 hover:scale-105'
+                                                }`}
+                                            style={{
+                                                backgroundColor: color.value,
+                                                boxShadow: selectedBoxColor === color.value ? '0 0 0 2px white, 0 0 0 4px' + color.value : 'none'
+                                            }}
+                                            title={color.name}
+                                        />
+                                    ))}
                                 </div>
                                 <div className="mb-4">
                                     <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="content">
