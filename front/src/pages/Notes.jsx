@@ -247,31 +247,33 @@ const Notes = () => {
 
         try {
             const noteData = {
-                title: editingNote ? editingNote.title : 'Drawing Note',
+                title: title || 'Untitled Drawing', // Başlık eklendi
                 content: drawingData,
-                tags: editingNote ? editingNote.tags : ['#drawing'],
+                tags: tags
+                    .filter(tag => tag.trim() !== '')
+                    .map(tag => `#${tag.trim()}`),
                 isDrawing: true
             };
 
-            let updatedNote;
-            if (editingNote && editingNote.content.startsWith('data:image')) {
-                // Update existing drawing note
-                updatedNote = await notesAPI.updateNote(editingNote._id, noteData);
+            if (editingNote) {
+                const updatedNote = await notesAPI.updateNote(editingNote._id, noteData);
                 setNotes(prevNotes => prevNotes.map(note =>
                     note._id === editingNote._id ? updatedNote : note
                 ));
                 toast.success('Drawing note updated successfully');
             } else {
-                // Create new drawing note
-                updatedNote = await notesAPI.createNote(noteData);
-                setNotes(prevNotes => [...prevNotes, updatedNote]);
+                const newNote = await notesAPI.createNote(noteData);
+                setNotes(prevNotes => [...prevNotes, newNote]);
                 toast.success('Drawing note created successfully');
             }
 
             // Reset form
             setIsDrawingModalOpen(false);
             setDrawingData('');
+            setTitle('');
+            setTags(['']);
             setEditingNote(null);
+
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Failed to save drawing note';
             toast.error(errorMessage);
@@ -280,6 +282,7 @@ const Notes = () => {
             setIsLoading(false);
         }
     };
+
     const allTags = [...new Set(notes.flatMap(note => note.tags))];
 
     const filteredNotes = notes.filter(note => {
@@ -721,12 +724,11 @@ const Notes = () => {
                 {/* Add Drawing Modal */}
                 {isDrawingModalOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4">
+                        <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
                             <div className="flex justify-between items-center mb-4">
-
-                                <h3 className="text-xl font-semibold text-gray-800">Add Drawing</h3>
-
-
+                                <h3 className="text-xl font-semibold text-gray-800">
+                                    {editingNote ? "Edit Drawing Note" : "Add Drawing Note"}
+                                </h3>
                                 <button
                                     onClick={() => setIsDrawingModalOpen(false)}
                                     className="text-gray-500 hover:text-gray-700 cursor-pointer"
@@ -734,12 +736,38 @@ const Notes = () => {
                                     <FaTimes className="text-xl" />
                                 </button>
                             </div>
+
                             <form onSubmit={handleDrawingSubmit}>
+                                {/* Başlık Alanı */}
                                 <div className="mb-4">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="block text-gray-700 text-sm font-bold" htmlFor="drawingTitle">
+                                            Title
+                                        </label>
+                                        <span className="text-sm text-gray-500">
+                                            {(editingNote?.title || title).length}/50
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        id="drawingTitle"
+                                        value={editingNote?.title || title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                        required
+                                        maxLength={50}
+                                    />
+                                </div>
+
+                                {/* Çizim Alanı */}
+                                <div className="mb-4">
+                                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                                        Drawing
+                                    </label>
                                     <canvas
                                         ref={canvasRef}
                                         id="drawingCanvas"
-                                        className="border-2 border-gray-300 rounded-lg w-full h-[400px]"
+                                        className="border-2 border-gray-300 rounded-lg w-full h-[400px] bg-white"
                                         onMouseDown={startDrawing}
                                         onMouseUp={finishDrawing}
                                         onMouseMove={draw}
@@ -749,20 +777,57 @@ const Notes = () => {
                                         onTouchMove={draw}
                                     />
                                 </div>
+
+                                {/* Tag Alanı */}
+                                <div className="mb-4">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="block text-gray-700 text-sm font-bold">
+                                            Tags ({tags.filter(tag => tag.trim() !== '').length}/6)
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={handleAddTag}
+                                            disabled={tags.length >= 6}
+                                            className={`text-blue-600 hover:text-blue-800 cursor-pointer ${tags.length >= 6 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        >
+                                            <FaPlus />
+                                        </button>
+                                    </div>
+                                    {tags.map((tag, index) => (
+                                        <div key={index} className="flex items-center mb-2">
+                                            <span className="text-gray-500 mr-2">#</span>
+                                            <input
+                                                type="text"
+                                                value={tag}
+                                                onChange={(e) => handleTagChange(index, e.target.value)}
+                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                placeholder={`Tag ${index + 1}`}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveTag(index)}
+                                                className="ml-2 text-red-500 hover:text-red-700 cursor-pointer"
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+
                                 <div className="flex justify-end gap-2">
                                     <button
                                         type="button"
                                         onClick={clearCanvas}
                                         className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors cursor-pointer"
                                     >
-                                        Clear
+                                        Clear Drawing
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={isLoading}
                                         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer"
                                     >
-                                        Save Drawing
+                                        {isLoading ? 'Saving...' : 'Save Drawing Note'}
                                     </button>
                                 </div>
                             </form>
