@@ -23,6 +23,7 @@ const Notes = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const notesPerPage = 8;
+    const [selectedColor, setSelectedColor] = useState('black');
     const [isDrawingModalOpen, setIsDrawingModalOpen] = useState(false);
     const [drawingData, setDrawingData] = useState('');
 
@@ -31,6 +32,13 @@ const Notes = () => {
     const [isDrawing, setIsDrawing] = useState(false);
     const canvasRef = useRef(null);
     const contextRef = useRef(null);
+
+    const colors = [
+        { name: 'Black', value: 'black' },
+        { name: 'Blue', value: '#2563eb' },
+        { name: 'Red', value: '#dc2626' },
+        { name: 'Green', value: '#16a34a' },
+    ];
 
     // Add these functions before the return statement
     const initializeCanvas = () => {
@@ -46,7 +54,7 @@ const Notes = () => {
         const context = canvas.getContext("2d");
         context.scale(2, 2); // Scale for better resolution
         context.lineCap = "round";
-        context.strokeStyle = "black";
+        context.strokeStyle = selectedColor;
         context.lineWidth = 5;
         contextRef.current = context;
     };
@@ -108,6 +116,12 @@ const Notes = () => {
             }, 100);
         }
     }, [isDrawingModalOpen, editingNote]);
+
+    useEffect(() => {
+        if (contextRef.current) {
+            contextRef.current.strokeStyle = selectedColor;
+        }
+    }, [selectedColor]);
 
 
 
@@ -764,6 +778,30 @@ const Notes = () => {
                                     <label className="block text-gray-700 text-sm font-bold mb-2">
                                         Drawing
                                     </label>
+                                    {/* Add this before the canvas element in both drawing modals */}
+                                    <div className="mb-4">
+                                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                                            Drawing Color
+                                        </label>
+                                        <div className="flex gap-3">
+                                            {colors.map((color) => (
+                                                <button
+                                                    key={color.value}
+                                                    type="button"
+                                                    onClick={() => setSelectedColor(color.value)}
+                                                    className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${selectedColor === color.value
+                                                        ? 'border-gray-600 scale-110'
+                                                        : 'border-gray-200 hover:scale-105'
+                                                        }`}
+                                                    style={{
+                                                        backgroundColor: color.value,
+                                                        boxShadow: selectedColor === color.value ? '0 0 0 2px white, 0 0 0 4px' + color.value : 'none'
+                                                    }}
+                                                    title={color.name}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
                                     <canvas
                                         ref={canvasRef}
                                         id="drawingCanvas"
