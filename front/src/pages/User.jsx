@@ -3,7 +3,8 @@ import { FaUser, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaCog, FaLock, FaEnvelop
 import { authAPI, userAPI, notesAPI } from '../api';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const User = () => {
     const [user, setUser] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -86,6 +87,15 @@ const User = () => {
         try {
             await authAPI.logout();
             localStorage.removeItem('token');
+            toast.success("Successfully logged out!", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
             navigate('/login');
         } catch (err) {
             setError('Failed to logout');

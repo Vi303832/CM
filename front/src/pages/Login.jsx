@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -27,15 +29,36 @@ const Login = () => {
             });
 
             localStorage.setItem('token', response.data.token);
-            navigate('/');
+            toast.success("Successfully logged in!", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            setTimeout(() => {
+                navigate('/');
+            }, 1000);
         } catch (error) {
             console.error('Login error:', error);
+            toast.error(error.response?.data?.message || "Login failed!", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         }
     };
 
     return (
         <div className="h-screen flex flex-col">
             <Navbar />
+            <ToastContainer />
             <main className="pt-16 h-full flex items-center justify-center bg-gray-50">
                 <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
                     <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Login</h2>
@@ -71,7 +94,7 @@ const Login = () => {
                         <div className="flex items-center justify-between">
                             <button
                                 type="submit"
-                                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors w-full"
+                                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors w-full cursor-pointer"
                             >
                                 Login
                             </button>
@@ -82,7 +105,7 @@ const Login = () => {
                                 <button
                                     type="button"
                                     onClick={() => navigate('/register')}
-                                    className="text-blue-600 hover:text-blue-800"
+                                    className="text-blue-600 hover:text-blue-800 cursor-pointer"
                                 >
                                     Register
                                 </button>
@@ -95,4 +118,4 @@ const Login = () => {
     );
 };
 
-export default Login; 
+export default Login;

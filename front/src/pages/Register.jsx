@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -24,13 +26,29 @@ const Register = () => {
 
         try {
             const response = await axios.post('http://localhost:5000/api/auth/register', formData);
+            toast.success("Successfully registered!", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
             navigate('/notes');
         } catch (err) {
-            console.error('Registration error:', err.response?.data?.message || err.message);
-            // Here you could set an error state to display to the user
+
+            toast.error(err.response?.data?.message || "Registration failed!", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         }
     }
-
 
     return (
         <div className="h-screen flex flex-col">

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { notesAPI } from '../api';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Notes = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,7 +32,7 @@ const Notes = () => {
                 setNotes(notesData);
 
             } catch (err) {
-
+                toast.error('Failed to fetch notes');
                 setError('Failed to fetch notes');
                 setNotes([]);
             }
@@ -42,6 +44,8 @@ const Notes = () => {
     const handleAddTag = () => {
         if (tags.length < 6) {
             setTags([...tags, '']);
+        } else {
+            toast.warning('Maximum 6 tags allowed');
         }
     };
 
@@ -75,6 +79,8 @@ const Notes = () => {
         const value = e.target.value;
         if (value.length <= 50) {
             setTitle(value);
+        } else {
+            toast.warning('Title cannot exceed 50 characters');
         }
     };
 
@@ -99,10 +105,12 @@ const Notes = () => {
                 setNotes(prevNotes => prevNotes.map(note =>
                     note._id === editingNote._id ? updatedNote : note
                 ));
+                toast.success('Note updated successfully');
             } else {
                 // Create new note
                 updatedNote = await notesAPI.createNote(noteData);
                 setNotes(prevNotes => [...prevNotes, updatedNote]);
+                toast.success('Note created successfully');
             }
 
             // Reset form
@@ -113,7 +121,9 @@ const Notes = () => {
             setEditingNote(null);
 
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to save note');
+            const errorMessage = err.response?.data?.message || 'Failed to save note';
+            toast.error(errorMessage);
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -123,7 +133,9 @@ const Notes = () => {
         try {
             await notesAPI.deleteNote(id);
             setNotes(prevNotes => prevNotes.filter(note => note._id !== id));
+            toast.success('Note deleted successfully');
         } catch (err) {
+            toast.error('Failed to delete note');
             setError('Failed to delete note');
         }
     };
@@ -164,6 +176,7 @@ const Notes = () => {
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
             <Navbar />
+            <ToastContainer position="top-right" autoClose={3000} />
 
             <main className="flex-grow pt-24 p-6">
                 {/* Search and Filter Bar */}
