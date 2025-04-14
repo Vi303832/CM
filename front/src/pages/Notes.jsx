@@ -607,11 +607,11 @@ const Notes = () => {
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-xl font-semibold text-gray-800">
                                     {editingNote && editingNote.content && editingNote.content.startsWith('data:image')
-                                        ? 'Edit Drawing Note'
-                                        : 'Add Drawing Note'}
+                                        ? 'Edit Note'
+                                        : 'Add Note'}
                                 </h3>
                                 <button
-                                    onClick={() => setIsDrawingModalOpen(false)}
+                                    onClick={() => setIsModalOpen(false)}
                                     className="text-gray-500 hover:text-gray-700 cursor-pointer"
                                 >
                                     <FaTimes className="text-xl" />
@@ -706,7 +706,7 @@ const Notes = () => {
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer"
                                     >
                                         {editingNote && editingNote.content && editingNote.content.startsWith('data:image')
                                             ? 'Update Drawing'
@@ -723,7 +723,10 @@ const Notes = () => {
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                         <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-xl font-semibold text-gray-800">Add Drawing Note</h3>
+
+                                <h3 className="text-xl font-semibold text-gray-800">Add Drawing</h3>
+
+
                                 <button
                                     onClick={() => setIsDrawingModalOpen(false)}
                                     className="text-gray-500 hover:text-gray-700 cursor-pointer"
@@ -750,14 +753,14 @@ const Notes = () => {
                                     <button
                                         type="button"
                                         onClick={clearCanvas}
-                                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors cursor-pointer"
                                     >
                                         Clear
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer"
                                     >
                                         Save Drawing
                                     </button>
