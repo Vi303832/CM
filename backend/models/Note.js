@@ -21,7 +21,7 @@ const noteSchema = new mongoose.Schema({
     },
     color: {
         type: String,
-
+        default: "white"
 
     },
 

@@ -118,6 +118,17 @@ const Notes = () => {
     }, [isDrawingModalOpen]);
 
     useEffect(() => {
+        if (!isDrawingModalOpen) {
+            setEditingNote(null);
+            setTitle('');
+            setTags(['']);
+            setDrawingData('');
+            setSelectedColor('black'); // Varsayılan renge dön
+        }
+    }, [isDrawingModalOpen]);
+
+
+    useEffect(() => {
         if (isDrawingModalOpen && editingNote && editingNote.content && editingNote.content.startsWith('data:image')) {
             setTimeout(() => {
                 initializeCanvas();
@@ -226,7 +237,7 @@ const Notes = () => {
         setError(null);
 
         try {
-            console.log(selectedBoxColor)
+
             const noteData = {
                 title,
                 content,
@@ -260,6 +271,7 @@ const Notes = () => {
             setIsModalOpen(false);
             setEditingNote(null);
             setSelectedColor("white")
+            setSelectedBoxColor("white")
 
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Failed to save note';
@@ -294,7 +306,7 @@ const Notes = () => {
                     .filter(tag => tag.trim() !== '')
                     .map(tag => `#${tag.trim()}`),
                 isDrawing: true,
-                color: selectedColor,
+                color: "white",
             };
 
             if (editingNote) {
@@ -822,14 +834,13 @@ const Notes = () => {
 
                                 {/* Çizim Alanı */}
                                 <div className="mb-4">
-                                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                                        Drawing
-                                    </label>
-                                    {/* Add this before the canvas element in both drawing modals */}
+
+
                                     <div className="mb-4">
                                         <label className="block text-gray-700 text-sm font-bold mb-2">
                                             Drawing Color
                                         </label>
+
                                         <div className="flex gap-3">
                                             {colors.map((color) => (
                                                 <button
@@ -849,6 +860,9 @@ const Notes = () => {
                                             ))}
                                         </div>
                                     </div>
+                                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                                        Drawing
+                                    </label>
                                     <canvas
                                         ref={canvasRef}
                                         id="drawingCanvas"
