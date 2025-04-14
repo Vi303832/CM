@@ -100,6 +100,17 @@ const Notes = () => {
         }
     }, [isDrawingModalOpen]);
 
+    useEffect(() => {
+        if (isDrawingModalOpen && editingNote && editingNote.content && editingNote.content.startsWith('data:image')) {
+            setTimeout(() => {
+                initializeCanvas();
+                loadImageToCanvas(editingNote.content);
+            }, 100);
+        }
+    }, [isDrawingModalOpen, editingNote]);
+
+
+
 
 
 
@@ -150,9 +161,18 @@ const Notes = () => {
         e.stopPropagation();
         setEditingNote(note);
         setTitle(note.title);
-        setContent(note.content);
+
+        // Check if it's a drawing note
+        if (note.content && note.content.startsWith('data:image')) {
+            setDrawingData(note.content);
+            // We'll open the drawing modal instead of the regular edit modal
+            setIsDrawingModalOpen(true);
+        } else {
+            setContent(note.content);
+            setIsModalOpen(true);
+        }
+
         setTags(note.tags.map(tag => tag.replace('#', '')));
-        setIsModalOpen(true);
     };
 
     const handleTitleChange = (e) => {
@@ -227,17 +247,31 @@ const Notes = () => {
 
         try {
             const noteData = {
-                title: 'Drawing Note',
+                title: editingNote ? editingNote.title : 'Drawing Note',
                 content: drawingData,
-                tags: ['#drawing'],
+                tags: editingNote ? editingNote.tags : ['#drawing'],
                 isDrawing: true
             };
 
-            const newNote = await notesAPI.createNote(noteData);
-            setNotes(prevNotes => [...prevNotes, newNote]);
-            toast.success('Drawing note created successfully');
+            let updatedNote;
+            if (editingNote && editingNote.content.startsWith('data:image')) {
+                // Update existing drawing note
+                updatedNote = await notesAPI.updateNote(editingNote._id, noteData);
+                setNotes(prevNotes => prevNotes.map(note =>
+                    note._id === editingNote._id ? updatedNote : note
+                ));
+                toast.success('Drawing note updated successfully');
+            } else {
+                // Create new drawing note
+                updatedNote = await notesAPI.createNote(noteData);
+                setNotes(prevNotes => [...prevNotes, updatedNote]);
+                toast.success('Drawing note created successfully');
+            }
+
+            // Reset form
             setIsDrawingModalOpen(false);
             setDrawingData('');
+            setEditingNote(null);
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Failed to save drawing note';
             toast.error(errorMessage);
@@ -246,7 +280,6 @@ const Notes = () => {
             setIsLoading(false);
         }
     };
-
     const allTags = [...new Set(notes.flatMap(note => note.tags))];
 
     const filteredNotes = notes.filter(note => {
@@ -271,6 +304,19 @@ const Notes = () => {
                 return 0;
         }
     });
+    const loadImageToCanvas = (dataUrl) => {
+        if (!canvasRef.current || !contextRef.current) return;
+
+        const img = new Image();
+        img.onload = () => {
+            const canvas = canvasRef.current;
+            const context = canvas.getContext("2d");
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(img, 0, 0, canvas.offsetWidth, canvas.offsetHeight);
+            setDrawingData(dataUrl);
+        };
+        img.src = dataUrl;
+    };
 
     // Pagination logic
     const indexOfLastNote = currentPage * notesPerPage;
@@ -560,13 +606,12 @@ const Notes = () => {
                         <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-xl font-semibold text-gray-800">
-                                    {editingNote ? 'Edit Note' : 'Add New Note'}
+                                    {editingNote && editingNote.content && editingNote.content.startsWith('data:image')
+                                        ? 'Edit Drawing Note'
+                                        : 'Add Drawing Note'}
                                 </h3>
                                 <button
-                                    onClick={() => {
-                                        setIsModalOpen(false);
-                                        setEditingNote(null);
-                                    }}
+                                    onClick={() => setIsDrawingModalOpen(false)}
                                     className="text-gray-500 hover:text-gray-700 cursor-pointer"
                                 >
                                     <FaTimes className="text-xl" />
@@ -661,9 +706,11 @@ const Notes = () => {
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className={`bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors cursor-pointer ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
                                     >
-                                        {isLoading ? 'Saving...' : (editingNote ? 'Update Note' : 'Save Note')}
+                                        {editingNote && editingNote.content && editingNote.content.startsWith('data:image')
+                                            ? 'Update Drawing'
+                                            : 'Save Drawing'}
                                     </button>
                                 </div>
                             </form>
