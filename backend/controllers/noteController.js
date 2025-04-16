@@ -1,15 +1,19 @@
 import Note from '../models/Note.js';
 
+import cloudinary from '../utils/cloudinary.js';
+import fs from 'fs';
+
 // Create Note
 export const createNote = async (req, res) => {
     try {
-        const { title, content, tags, color } = req.body;
+        const { title, content, tags, color, imgUrl } = req.body;
         const note = await Note.create({
             title,
             content,
             tags: tags.filter(tag => tag.trim() !== ''),
             user: req.user._id,
             color,
+            imgUrl,
         });
         res.status(201).json(note);
     } catch (error) {

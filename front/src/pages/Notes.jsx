@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight, FaPencilAlt } from 'react-icons/fa';
+import axios from 'axios';
+import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight, FaPencilAlt, FaImage } from 'react-icons/fa';
 import { notesAPI } from '../api';
 import { ToastContainer, toast } from 'react-toastify';
 import { useRef } from 'react';
@@ -27,6 +28,13 @@ const Notes = () => {
     const [selectedBoxColor, setSelectedBoxColor] = useState('white');
     const [isDrawingModalOpen, setIsDrawingModalOpen] = useState(false);
     const [drawingData, setDrawingData] = useState('');
+
+    const [file, setFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState('');
+
+
+    const [imageUrl, setImageUrl] = useState('');
+    const [uploadLoading, setUploadLoading] = useState(false);
 
 
     // First, let's add state to track drawing status
@@ -237,28 +245,24 @@ const Notes = () => {
         setError(null);
 
         try {
+            const imgUrl = await uploadImage();
 
             const noteData = {
                 title,
                 content,
-
-                tags: tags
-                    .filter(tag => tag.trim() !== '')
-                    .map(tag => `#${tag.trim()}`),
+                tags: tags.filter(tag => tag.trim() !== '').map(tag => `#${tag.trim()}`),
                 color: selectedBoxColor,
-
+                imgUrl: imgUrl || null,
             };
 
             let updatedNote;
             if (editingNote) {
-                // Update existing note 
                 updatedNote = await notesAPI.updateNote(editingNote._id, noteData);
                 setNotes(prevNotes => prevNotes.map(note =>
                     note._id === editingNote._id ? updatedNote : note
                 ));
                 toast.success('Note updated successfully');
             } else {
-                console.log(noteData)
                 updatedNote = await notesAPI.createNote(noteData);
                 setNotes(prevNotes => [...prevNotes, updatedNote]);
                 toast.success('Note created successfully');
@@ -268,10 +272,11 @@ const Notes = () => {
             setTitle('');
             setContent('');
             setTags(['']);
+            setFile(null);
+            setPreviewUrl('');
             setIsModalOpen(false);
             setEditingNote(null);
-            setSelectedColor("white")
-            setSelectedBoxColor("white")
+            setSelectedBoxColor("white");
 
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Failed to save note';
@@ -281,6 +286,7 @@ const Notes = () => {
             setIsLoading(false);
         }
     };
+
 
     const handleDeleteNote = async (id) => {
         try {
@@ -293,6 +299,42 @@ const Notes = () => {
         }
     };
 
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        if (selectedFile) {
+            setFile(selectedFile);
+            setPreviewUrl(URL.createObjectURL(selectedFile));
+        }
+    };
+
+
+
+    const uploadImage = async () => {
+        if (!file) return null;
+
+        setUploadLoading(true);
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const response = await axios.post('http://localhost:5000/api/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                withCredentials: true // auth token varsa
+            });
+
+
+
+            return response.data.url; // Cloudinary'den gelen URL
+        } catch (error) {
+            console.error('Image upload error:', error);
+            toast.error('Image upload failed');
+            return null;
+        } finally {
+            setUploadLoading(false);
+        }
+    };
     const handleDrawingSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
@@ -361,6 +403,8 @@ const Notes = () => {
                 return 0;
         }
     });
+
+
     const loadImageToCanvas = (dataUrl) => {
         if (!canvasRef.current || !contextRef.current) return;
 
@@ -504,6 +548,15 @@ const Notes = () => {
                                                 </div>
                                             </div>
                                             <div className="flex-grow overflow-hidden">
+                                                {note.imgUrl && (
+                                                    <div className="mb-2">
+                                                        <img
+                                                            src={note.imgUrl}
+                                                            alt="Note"
+                                                            className="w-full h-32 object-cover rounded"
+                                                        />
+                                                    </div>
+                                                )}
                                                 {note.content && note.content.startsWith('data:image') ? (
                                                     <img
                                                         src={note.content}
@@ -656,7 +709,7 @@ const Notes = () => {
                         </div>
                     </div>
                 )}
-
+                {/*Add Note*/}
                 {/* Edit Modal */}
                 {isModalOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -743,6 +796,55 @@ const Notes = () => {
                                         />
                                     )}
                                 </div>
+                                <div className="mb-4">
+                                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                                        Image Upload
+                                    </label>
+                                    <div className="flex flex-col gap-2">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                            className="hidden"
+                                            id="imageUpload"
+                                            disabled={uploadLoading}
+                                        />
+                                        <label
+                                            htmlFor="imageUpload"
+                                            className={`cursor-pointer bg-white border-2 border-gray-300 border-dashed rounded-lg p-4 text-center hover:border-gray-400 transition-colors ${uploadLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        >
+                                            {previewUrl ? (
+                                                <img
+                                                    src={previewUrl}
+                                                    alt="Preview"
+                                                    className="max-h-48 mx-auto"
+                                                />
+                                            ) : uploadLoading ? (
+                                                <div className="text-gray-500">
+                                                    <p>Uploading...</p>
+                                                </div>
+                                            ) : (
+                                                <div className="text-gray-500">
+                                                    <FaImage className="mx-auto text-3xl mb-2" />
+                                                    <p>Click to upload an image</p>
+                                                </div>
+                                            )}
+                                        </label>
+                                        {previewUrl && !uploadLoading && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setFile(null);
+                                                    setPreviewUrl('');
+                                                }}
+                                                className="text-red-500 hover:text-red-700 text-sm"
+                                            >
+                                                Remove Image
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+
                                 <div className="mb-4">
                                     <div className="flex justify-between items-center mb-2">
                                         <label className="block text-gray-700 text-sm font-bold">
