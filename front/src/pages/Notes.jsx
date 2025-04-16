@@ -727,7 +727,7 @@ const Notes = () => {
                                     <FaTimes className="text-2xl" />
                                 </button>
                             </div>
-                            -
+
                             {displayNote.imgUrl && (
                                 <div className="mb-4">
                                     <img
@@ -814,7 +814,11 @@ const Notes = () => {
                                         maxLength={50}
                                     />
                                 </div>
-                                <div className="flex gap-3">
+                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
+                                    Background
+                                </label>
+
+                                <div className="flex gap-3 mb-2">
                                     {boxcolors.map((color) => (
                                         <button
                                             key={color.value}
