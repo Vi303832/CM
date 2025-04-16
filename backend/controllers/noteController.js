@@ -34,7 +34,7 @@ export const getNotes = async (req, res) => {
 // Update Note
 export const updateNote = async (req, res) => {
     try {
-        const { title, content, tags } = req.body;
+        const { title, content, tags, color, imgUrl } = req.body;
         const note = await Note.findById(req.params.id);
 
         if (!note) {
@@ -45,16 +45,31 @@ export const updateNote = async (req, res) => {
             return res.status(401).json({ message: 'Not authorized' });
         }
 
+        // Handle image deletion
+        if (note.imgUrl && imgUrl === null) {
+            // Extract public_id from the old image URL
+            const publicId = note.imgUrl.split('/').pop().split('.')[0];
+            await cloudinary.uploader.destroy(publicId);
+        }
+
+        // Update note fields
         note.title = title || note.title;
         note.content = content || note.content;
         note.tags = tags ? tags.filter(tag => tag.trim() !== '') : note.tags;
+        note.color = color || note.color;
+        if (imgUrl !== undefined) {
+            note.imgUrl = imgUrl;
+        }
 
         const updatedNote = await note.save();
         res.json(updatedNote);
     } catch (error) {
+        console.error('Update error:', error);
         res.status(500).json({ message: error.message });
     }
 };
+
+
 
 // Delete Note
 export const deleteNote = async (req, res) => {

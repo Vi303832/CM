@@ -216,18 +216,24 @@ const Notes = () => {
         e.stopPropagation();
         setEditingNote(note);
         setTitle(note.title);
+        setContent(note.content);
+        setTags(note.tags.map(tag => tag.replace('#', '')));
+        setSelectedBoxColor(note.color || 'white');
 
-        // Check if it's a drawing note
-        if (note.content && note.content.startsWith('data:image')) {
-            setDrawingData(note.content);
-            // We'll open the drawing modal instead of the regular edit modal
-            setIsDrawingModalOpen(true);
+        // Add image handling
+        if (note.imgUrl) {
+            setPreviewUrl(note.imgUrl);
         } else {
-            setContent(note.content);
-            setIsModalOpen(true);
+            setPreviewUrl('');
+            setFile(null);
         }
 
-        setTags(note.tags.map(tag => tag.replace('#', '')));
+        if (note.content && note.content.startsWith('data:image')) {
+            setDrawingData(note.content);
+            setIsDrawingModalOpen(true);
+        } else {
+            setIsModalOpen(true);
+        }
     };
 
     const handleTitleChange = (e) => {
@@ -245,14 +251,23 @@ const Notes = () => {
         setError(null);
 
         try {
-            const imgUrl = await uploadImage();
+            let imgUrl = editingNote?.imgUrl; // Keep existing image URL by default
+
+            // Handle image changes
+            if (file) {
+                // Upload new image
+                imgUrl = await uploadImage();
+            } else if (previewUrl === '') {
+                // If preview is empty but there was an image before, remove it
+                imgUrl = null;
+            }
 
             const noteData = {
                 title,
                 content,
                 tags: tags.filter(tag => tag.trim() !== '').map(tag => `#${tag.trim()}`),
                 color: selectedBoxColor,
-                imgUrl: imgUrl || null,
+                imgUrl: imgUrl,
             };
 
             let updatedNote;
@@ -307,7 +322,14 @@ const Notes = () => {
         }
     };
 
-
+    const handleRemoveImage = () => {
+        setFile(null);
+        setPreviewUrl('');
+        if (editingNote?.imgUrl) {
+            // If removing an existing image
+            toast.info('Image will be removed when you save the note');
+        }
+    };
 
     const uploadImage = async () => {
         if (!file) return null;
@@ -796,6 +818,7 @@ const Notes = () => {
                                         />
                                     )}
                                 </div>
+                                {/* Image Upload Section */}
                                 <div className="mb-4">
                                     <label className="block text-gray-700 text-sm font-bold mb-2">
                                         Image Upload
@@ -811,7 +834,8 @@ const Notes = () => {
                                         />
                                         <label
                                             htmlFor="imageUpload"
-                                            className={`cursor-pointer bg-white border-2 border-gray-300 border-dashed rounded-lg p-4 text-center hover:border-gray-400 transition-colors ${uploadLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                            className={`cursor-pointer bg-white border-2 border-gray-300 border-dashed rounded-lg p-4 text-center hover:border-gray-400 transition-colors ${uploadLoading ? 'opacity-50 cursor-not-allowed' : ''
+                                                }`}
                                         >
                                             {previewUrl ? (
                                                 <img
@@ -827,16 +851,18 @@ const Notes = () => {
                                                 <div className="text-gray-500">
                                                     <FaImage className="mx-auto text-3xl mb-2" />
                                                     <p>Click to upload an image</p>
+                                                    {editingNote?.imgUrl && (
+                                                        <p className="text-sm text-blue-600 mt-1">
+                                                            Current image will be kept if no new image is selected
+                                                        </p>
+                                                    )}
                                                 </div>
                                             )}
                                         </label>
-                                        {previewUrl && !uploadLoading && (
+                                        {(previewUrl || editingNote?.imgUrl) && !uploadLoading && (
                                             <button
                                                 type="button"
-                                                onClick={() => {
-                                                    setFile(null);
-                                                    setPreviewUrl('');
-                                                }}
+                                                onClick={handleRemoveImage}
                                                 className="text-red-500 hover:text-red-700 text-sm"
                                             >
                                                 Remove Image
@@ -844,7 +870,6 @@ const Notes = () => {
                                         )}
                                     </div>
                                 </div>
-
                                 <div className="mb-4">
                                     <div className="flex justify-between items-center mb-2">
                                         <label className="block text-gray-700 text-sm font-bold">
