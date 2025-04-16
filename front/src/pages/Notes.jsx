@@ -157,7 +157,7 @@ const Notes = () => {
 
     const getNoteColorClass = (color) => {
         switch (color) {
-            case 'white': return 'bg-white';
+            case 'white': return 'bg-white ';
             case '#2563eb': return 'bg-blue-600';
             case '#dc2626': return 'bg-red-600';
             case '#16a34a': return 'bg-green-600';
@@ -549,21 +549,21 @@ const Notes = () => {
                                     <div
                                         key={note._id}
                                         onClick={() => handleCardClick(note)}
-                                        className={`${getNoteColorClass(note.color)} rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-[300px] flex flex-col cursor-pointer`}
+                                        className={`${getNoteColorClass(note.color)}  rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-[300px] flex flex-col cursor-pointer  ${note.color == "white" ? "text-black" : "!text-white"} `}
                                     >
                                         <div className="p-6 flex flex-col h-full">
                                             <div className="flex justify-between items-start mb-4">
-                                                <h3 className="text-xl font-semibold text-gray-800 truncate max-w-[250px] sm:max-w-[200px]">{note.title}</h3>
+                                                <h3 className="text-xl font-semibold  truncate max-w-[250px] sm:max-w-[200px]">{note.title}</h3>
                                                 <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
                                                     <button
                                                         onClick={() => handleDeleteNote(note._id)}
-                                                        className="text-red-500 hover:text-red-700 cursor-pointer"
+                                                        className="text-red-500 hover:text-red-700 cursor-pointer bg-white p-2 rounded-full"
                                                     >
                                                         <FaTrash />
                                                     </button>
                                                     <button
                                                         onClick={(e) => handleEditClick(note, e)}
-                                                        className="text-blue-500 hover:text-blue-700 cursor-pointer"
+                                                        className="text-blue-500 hover:text-blue-700 bg-white p-2 rounded-full cursor-pointer"
                                                     >
                                                         <FaEdit />
                                                     </button>
@@ -586,7 +586,7 @@ const Notes = () => {
                                                         className="w-full h-32 object-contain"
                                                     />
                                                 ) : (
-                                                    <p className="text-gray-600 whitespace-pre-wrap line-clamp-6 sm:line-clamp-8 overflow-hidden text-ellipsis">
+                                                    <p className="opacity-80 whitespace-pre-wrap line-clamp-6 sm:line-clamp-8 overflow-hidden text-ellipsis">
                                                         {note.content}
                                                     </p>
                                                 )}
