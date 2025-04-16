@@ -343,7 +343,7 @@ const Notes = () => {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
-                withCredentials: true // auth token varsa
+
             });
 
 
@@ -575,7 +575,7 @@ const Notes = () => {
                                                         <img
                                                             src={note.imgUrl}
                                                             alt="Note"
-                                                            className="w-full h-32 object-cover rounded"
+                                                            className="w-full h-32 object-contain rounded"
                                                         />
                                                     </div>
                                                 )}
@@ -700,6 +700,17 @@ const Notes = () => {
                                     <FaTimes className="text-2xl" />
                                 </button>
                             </div>
+                            -
+                            {displayNote.imgUrl && (
+                                <div className="mb-4">
+                                    <img
+                                        src={displayNote.imgUrl}
+                                        alt="Note"
+                                        className="w-full max-h-[50vh] object-contain rounded"
+                                    />
+                                </div>
+                            )}
+
                             <div className="mb-8">
                                 <div className="bg-gray-50 rounded-lg p-6">
                                     {displayNote.content && displayNote.content.startsWith('data:image') ? (
@@ -709,12 +720,13 @@ const Notes = () => {
                                             className="w-full rounded-lg"
                                         />
                                     ) : (
-                                        <p className="text-gray-700 whitespace-pre-wrap text-lg leading-relaxed">
+                                        <p className="text-gray-700 whitespace-pre-wrap w-[90%] wrap-break-word text-lg leading-relaxed">
                                             {displayNote.content}
                                         </p>
                                     )}
                                 </div>
                             </div>
+
                             {displayNote.tags && Array.isArray(displayNote.tags) && displayNote.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
                                     {displayNote.tags.map((tag, index) => (
