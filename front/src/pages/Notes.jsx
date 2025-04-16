@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
-import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight, FaPencilAlt, FaImage, FaThumbtack } from 'react-icons/fa';
+import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight, FaPencilAlt, FaImage, FaThumbtack, FaMagic } from 'react-icons/fa';
 import { notesAPI } from '../api';
 import { ToastContainer, toast } from 'react-toastify';
 import { useRef } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Notes = () => {
+    {/*Ai (DANGEROUS, TOXİC, MALİCİOUS)*/ }
+
+    const [isSummarizing, setIsSummarizing] = useState(false);
+    const [summary, setSummary] = useState('');
+    const [showSummary, setShowSummary] = useState(false);
+
+    {/*Ai (DANGEROUS, TOXİC, MALİCİOUS)*/ }
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDisplayModalOpen, setIsDisplayModalOpen] = useState(false);
     const [title, setTitle] = useState('');
@@ -255,6 +263,53 @@ const Notes = () => {
             toast.warning('Title cannot exceed 50 characters');
         }
     };
+
+    {/*Aİ Aİ Aİ Aİ */ }
+    const handleSummarize = async () => {
+        if (!displayNote?.content) return;
+
+        setIsSummarizing(true);
+        setShowSummary(true);
+        setSummary('');
+
+        try {
+            // For a completely free solution, we'll use Hugging Face's Inference API
+            const response = await fetch(
+                "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        // You can get a free API key from Hugging Face
+                        "Authorization": "Bearer YOUR_HUGGING_FACE_API_KEY"
+                    },
+                    body: JSON.stringify({
+                        inputs: displayNote.content,
+                        parameters: { max_length: 130, min_length: 30 }
+                    }),
+                }
+            );
+
+            const result = await response.json();
+            if (result.error) {
+                throw new Error(result.error);
+            }
+
+            if (Array.isArray(result) && result[0]?.summary_text) {
+                setSummary(result[0].summary_text);
+            } else {
+                throw new Error('Unexpected response format');
+            }
+        } catch (error) {
+            console.error('Summarization error:', error);
+            toast.error('Failed to generate summary. Please try again later.');
+            setSummary('Could not generate summary. Please try again.');
+        } finally {
+            setIsSummarizing(false);
+        }
+    };
+
+    {/*Aİ Aİ Aİ Aİ */ }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -784,6 +839,25 @@ const Notes = () => {
                                     <FaTimes className="text-2xl" />
                                 </button>
                             </div>
+                            <div className="flex justify-end mb-4">
+                                <button
+                                    onClick={handleSummarize}
+                                    disabled={isSummarizing}
+                                    className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors cursor-pointer flex items-center gap-2"
+                                >
+                                    {isSummarizing ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                            Summarizing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FaMagic className="text-sm" />
+                                            Summarize with AI
+                                        </>
+                                    )}
+                                </button>
+                            </div>
 
                             {displayNote.imgUrl && (
                                 <div className="mb-4">
@@ -796,6 +870,37 @@ const Notes = () => {
                             )}
 
                             <div className="mb-8">
+                                <div className="mb-8">
+                                    {showSummary && summary ? (
+                                        <div className="bg-purple-50 rounded-lg p-6 mb-4 border-l-4 border-purple-500">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h4 className="font-semibold text-purple-800">AI Summary</h4>
+                                                <button
+                                                    onClick={() => setShowSummary(false)}
+                                                    className="text-purple-600 hover:text-purple-800"
+                                                >
+                                                    <FaTimes />
+                                                </button>
+                                            </div>
+                                            <p className="text-gray-700">{summary}</p>
+                                        </div>
+                                    ) : null}
+
+                                    <div className="bg-gray-50 rounded-lg p-6">
+                                        {displayNote.content && displayNote.content.startsWith('data:image') ? (
+                                            <img
+                                                src={displayNote.content}
+                                                alt="Drawing"
+                                                className="w-full rounded-lg"
+                                            />
+                                        ) : (
+                                            <p className="text-gray-700 whitespace-pre-wrap w-[90%] wrap-break-word text-lg leading-relaxed">
+                                                {displayNote.content}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
                                 <div className="bg-gray-50 rounded-lg p-6">
                                     {displayNote.content && displayNote.content.startsWith('data:image') ? (
                                         <img
