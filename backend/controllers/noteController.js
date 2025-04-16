@@ -6,7 +6,7 @@ import fs from 'fs';
 // Create Note
 export const createNote = async (req, res) => {
     try {
-        const { title, content, tags, color, imgUrl } = req.body;
+        const { title, content, tags, color, imgUrl, pinned } = req.body;
         const note = await Note.create({
             title,
             content,
@@ -14,6 +14,7 @@ export const createNote = async (req, res) => {
             user: req.user._id,
             color,
             imgUrl,
+            pinned: pinned || false // Default to false if not provided
         });
         res.status(201).json(note);
     } catch (error) {
@@ -24,17 +25,20 @@ export const createNote = async (req, res) => {
 // Get User Notes
 export const getNotes = async (req, res) => {
     try {
-        const notes = await Note.find({ user: req.user._id }).sort({ createdAt: -1 });
+        const notes = await Note.find({ user: req.user._id })
+            .sort({
+                pinned: -1, // Pinned notes first (descending order)
+                createdAt: -1
+            });
         res.json(notes);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
 // Update Note
 export const updateNote = async (req, res) => {
     try {
-        const { title, content, tags, color, imgUrl } = req.body;
+        const { title, content, tags, color, imgUrl, pinned } = req.body;
         const note = await Note.findById(req.params.id);
 
         if (!note) {
@@ -59,6 +63,9 @@ export const updateNote = async (req, res) => {
         note.color = color || note.color;
         if (imgUrl !== undefined) {
             note.imgUrl = imgUrl;
+        }
+        if (pinned !== undefined) {
+            note.pinned = pinned;
         }
 
         const updatedNote = await note.save();

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
-import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight, FaPencilAlt, FaImage } from 'react-icons/fa';
+import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight, FaPencilAlt, FaImage, FaThumbtack } from 'react-icons/fa';
 import { notesAPI } from '../api';
 import { ToastContainer, toast } from 'react-toastify';
 import { useRef } from 'react';
@@ -357,6 +357,20 @@ const Notes = () => {
             setUploadLoading(false);
         }
     };
+
+
+    const handleTogglePin = async (id, pinnedStatus) => {
+        try {
+            const updatedNote = await notesAPI.updateNote(id, { pinned: pinnedStatus });
+            setNotes(prevNotes => prevNotes.map(note =>
+                note._id === id ? updatedNote : note
+            ));
+            toast.success(`Note ${pinnedStatus ? 'pinned' : 'unpinned'}`);
+        } catch (err) {
+            toast.error('Failed to update pin status');
+        }
+    };
+
     const handleDrawingSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
@@ -412,6 +426,11 @@ const Notes = () => {
     });
 
     const sortedNotes = [...filteredNotes].sort((a, b) => {
+        // Pinned notes always come first
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+
+        // Then apply the selected sorting
         switch (sortOption) {
             case 'newest':
                 return new Date(b.createdAt) - new Date(a.createdAt);
@@ -425,8 +444,6 @@ const Notes = () => {
                 return 0;
         }
     });
-
-
     const loadImageToCanvas = (dataUrl) => {
         if (!canvasRef.current || !contextRef.current) return;
 
@@ -555,6 +572,16 @@ const Notes = () => {
                                             <div className="flex justify-between items-start mb-4">
                                                 <h3 className="text-xl font-semibold  truncate max-w-[250px] sm:max-w-[200px]">{note.title}</h3>
                                                 <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleTogglePin(note._id, !note.pinned);
+                                                        }}
+                                                        className={`${note.pinned ? 'text-yellow-500' : 'text-gray-500'} hover:text-yellow-600 bg-white p-2 rounded-full cursor-pointer`}
+                                                        title={note.pinned ? "Unpin note" : "Pin note"}
+                                                    >
+                                                        <FaThumbtack />
+                                                    </button>
                                                     <button
                                                         onClick={() => handleDeleteNote(note._id)}
                                                         className="text-red-500 hover:text-red-700 cursor-pointer bg-white p-2 rounded-full"

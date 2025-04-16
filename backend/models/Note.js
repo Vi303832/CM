@@ -28,7 +28,8 @@ const noteSchema = new mongoose.Schema({
         type: String,
         default: null,
         required: false
-    }
+    },
+    pinned: { type: Boolean, default: false }
 
 }, {
     timestamps: true
