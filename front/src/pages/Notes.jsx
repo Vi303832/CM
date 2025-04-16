@@ -171,21 +171,32 @@ const Notes = () => {
 
     useEffect(() => {
         const fetchNotes = async () => {
+            setIsLoading(true);
+            setError(null);
+
             try {
                 const response = await notesAPI.getNotes();
 
-                const notesData = response && Array.isArray(response) ? response : [];
-                setNotes(notesData);
-
+                if (response && Array.isArray(response)) {
+                    setNotes(response);
+                } else {
+                    throw new Error('Invalid response format');
+                }
             } catch (err) {
-                toast.error('Failed to fetch notes');
+
                 setError('Failed to fetch notes');
+
+                if (notes.length === 0) {
+                    toast.error('Failed to fetch notes');
+                }
                 setNotes([]);
+            } finally {
+                setIsLoading(false);
             }
         };
 
         fetchNotes();
-    }, [notes]);
+    }, []); // Removed 'notes' from dependencies to prevent infinite loop
 
     const handleAddTag = () => {
         if (tags.length < 6) {
@@ -540,7 +551,38 @@ const Notes = () => {
                     </div>
                 </div>
 
-                {!notes || notes.length === 0 ? (
+                {isLoading ? (
+                    <div className="h-full flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="flex justify-center mb-6">
+                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                            </div>
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                                Loading Notes...
+                            </h2>
+                        </div>
+                    </div>
+                ) : error ? (
+                    <div className="h-full flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="flex justify-center mb-6">
+                                <FaStickyNote className="text-6xl text-red-500" />
+                            </div>
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                                Failed to Load Notes
+                            </h2>
+                            <p className="text-gray-600 mb-4">
+                                {error}
+                            </p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    </div>
+                ) : !notes || notes.length === 0 ? (
                     <div className="h-full flex items-center justify-center">
                         <div className="text-center">
                             <div className="flex justify-center mb-6">
@@ -559,18 +601,33 @@ const Notes = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full max-w-7xl mx-auto px-4">
                             {currentNotes.length === 0 ? (
                                 <div className="col-span-full text-center py-8">
-                                    <p className="text-gray-600 text-lg">No notes found matching your search.</p>
+                                    <div className="flex justify-center mb-4">
+                                        <FaSearch className="text-4xl text-gray-400" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                                        No Notes Found
+                                    </h3>
+                                    <p className="text-gray-600">
+                                        No notes match your search criteria. Try different filters or search terms.
+                                    </p>
                                 </div>
                             ) : (
                                 currentNotes.map((note) => (
                                     <div
                                         key={note._id}
                                         onClick={() => handleCardClick(note)}
-                                        className={`${getNoteColorClass(note.color)}  rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-[300px] flex flex-col cursor-pointer  ${note.color == "white" ? "text-black" : "!text-white"} `}
+                                        className={`${getNoteColorClass(note.color)} relative rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-[300px] flex flex-col cursor-pointer ${note.color == "white" ? "text-black" : "!text-white"} ${note.pinned ? 'ring-2 ring-yellow-400' : ''}`}
                                     >
+                                        {note.pinned && (
+                                            <div className="absolute top-2 right-2 text-yellow-500 bg-white p-1 rounded-full">
+                                                <FaThumbtack />
+                                            </div>
+                                        )}
                                         <div className="p-6 flex flex-col h-full">
                                             <div className="flex justify-between items-start mb-4">
-                                                <h3 className="text-xl font-semibold  truncate max-w-[250px] sm:max-w-[200px]">{note.title}</h3>
+                                                <h3 className="text-xl font-semibold truncate max-w-[250px] sm:max-w-[200px]">
+                                                    {note.title}
+                                                </h3>
                                                 <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
                                                     <button
                                                         onClick={(e) => {
@@ -639,7 +696,7 @@ const Notes = () => {
 
                         {/* Pagination */}
                         {totalPages > 1 && (
-                            <div className="flex justify-center items-center mt-8 gap-2  ">
+                            <div className="flex justify-center items-center mt-8 gap-2">
                                 <button
                                     onClick={() => paginate(currentPage - 1)}
                                     disabled={currentPage === 1}
@@ -954,9 +1011,10 @@ const Notes = () => {
                                         disabled={isLoading}
                                         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer"
                                     >
-                                        {editingNote && editingNote.content && editingNote.content.startsWith('data:image')
+                                        {isLoading ? "Loading.." : `${editingNote && editingNote.content && editingNote.content.startsWith('data:image')
                                             ? 'Update Drawing'
-                                            : 'Save Drawing'}
+                                            : 'Save Drawing'}`}
+
                                     </button>
                                 </div>
                             </form>
