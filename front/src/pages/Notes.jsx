@@ -3,16 +3,24 @@ import Navbar from '../components/Navbar';
 import axios from 'axios';
 import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight, FaPencilAlt, FaImage, FaThumbtack, FaMagic } from 'react-icons/fa';
 import { notesAPI } from '../api';
+
+
 import { ToastContainer, toast } from 'react-toastify';
 import { useRef } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Notes = () => {
+
+
     {/*Ai (DANGEROUS, TOXİC, MALİCİOUS)*/ }
+
+
+
+
 
     const [isSummarizing, setIsSummarizing] = useState(false);
     const [summary, setSummary] = useState('');
-    const [showSummary, setShowSummary] = useState(false);
+    const [showSummary, setShowSummary] = useState(true);
 
     {/*Ai (DANGEROUS, TOXİC, MALİCİOUS)*/ }
 
@@ -265,47 +273,60 @@ const Notes = () => {
     };
 
     {/*Aİ Aİ Aİ Aİ */ }
+
+
+
     const handleSummarize = async () => {
-        if (!displayNote?.content) return;
-
-        setIsSummarizing(true);
-        setShowSummary(true);
-        setSummary('');
-
         try {
-            // For a completely free solution, we'll use Hugging Face's Inference API
-            const response = await fetch(
-                "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        // You can get a free API key from Hugging Face
-                        "Authorization": "Bearer YOUR_HUGGING_FACE_API_KEY"
-                    },
-                    body: JSON.stringify({
-                        inputs: displayNote.content,
-                        parameters: { max_length: 130, min_length: 30 }
-                    }),
-                }
-            );
-
-            const result = await response.json();
-            if (result.error) {
-                throw new Error(result.error);
+            if (!displayNote.content) {
+                toast.error('No content to summarize');
+                return;
             }
 
-            if (Array.isArray(result) && result[0]?.summary_text) {
-                setSummary(result[0].summary_text);
+            const result = await notesAPI.summarizeNote(displayNote.content);
+
+            // Handle various response formats
+            let summaryText = '';
+
+            // Case 1: Direct text response (string)
+            if (typeof result === 'string') {
+                summaryText = result;
+            }
+            // Case 2: Hugging Face standard format (array with summary_text)
+            else if (Array.isArray(result) && result[0]?.summary_text) {
+                summaryText = result[0].summary_text;
+            }
+            // Case 3: Your expected format { data: { summary: text } }
+            else if (result?.data?.summary) {
+                summaryText = result.data.summary;
+            }
+            // Case 4: Alternative format { summary_text: text }
+            else if (result?.summary_text) {
+                summaryText = result.summary_text;
+            }
+            // Case 5: Raw response from API (no parsing needed)
+            else {
+                summaryText = result;
+            }
+
+            if (summaryText) {
+                setSummary(summaryText);
+                toast.success('Summary generated successfully');
+                console.log(summary)
             } else {
-                throw new Error('Unexpected response format');
+                console.error('Unexpected API response structure:', result);
+                throw new Error('Received empty or invalid summary');
             }
         } catch (error) {
-            console.error('Summarization error:', error);
-            toast.error('Failed to generate summary. Please try again later.');
-            setSummary('Could not generate summary. Please try again.');
-        } finally {
-            setIsSummarizing(false);
+            console.error('Summarization failed:', error);
+
+            // Provide more detailed error messages
+            const errorMessage = error.response?.data?.error ||
+                error.message ||
+                'Failed to generate summary';
+
+            toast.error(`Summarization error: ${errorMessage}`);
+            setSummary(`Error: ${errorMessage}`);
         }
     };
 

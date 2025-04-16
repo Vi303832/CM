@@ -73,5 +73,16 @@ export const notesAPI = {
     deleteNote: async (id) => {
         const response = await api.delete(`/notes/${id}`);
         return response.data;
-    }
+    },
+    summarizeNote: async (text) => {
+        try {
+
+            const response = await api.post('/summarize', { text }); // api kullanılmalı
+            return response.data.summary;
+        } catch (error) {
+            console.error('Summarization error:', error);
+            throw error;
+        }
+    },
+
 };

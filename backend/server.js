@@ -8,16 +8,17 @@ import profileRoutes from './routes/profileRoutes.js';
 import { protect } from './middleware/authMiddleware.js';
 import multer from 'multer';
 import fs from 'fs';
+import axios from 'axios';
+
 
 import cloudinary from './utils/cloudinary.js';
 import upload from './middleware/upload.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-
 
 
 dotenv.config();
@@ -26,7 +27,12 @@ const app = express();
 
 // Middleware
 
-app.use(cors());
+// In server.js
+app.use(cors({
+    origin: 'http://localhost:5173', // Your frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 
@@ -79,6 +85,58 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 
         res.status(500).json({
             error: 'File upload failed',
+            details: error.message
+        });
+    }
+});
+
+
+
+
+{/*AI*/ }
+const apiKey = process.env.HUGGING_FACE_API_KEY;
+
+app.post('/api/summarize', express.json(), async (req, res) => {
+    try {
+        const { text } = req.body;
+        console.log("bura")
+        if (!text) {
+            return res.status(400).json({ error: 'Text is required' });
+        }
+
+        const response = await axios.post(
+            'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
+            { inputs: text },
+            {
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        const summary = Array.isArray(response.data)
+            ? response.data[0]?.summary_text
+            : response.data?.summary_text;
+
+        if (!summary) {
+            throw new Error('Invalid response from Hugging Face');
+        }
+
+        res.json({ summary });
+
+    } catch (error) {
+        console.error('Summarization error:', error);
+
+        // Handle Hugging Face specific errors
+        if (error.response?.data?.error) {
+            return res.status(502).json({
+                error: 'Summarization service error',
+                details: error.response.data.error
+            });
+        }
+
+        res.status(500).json({
+            error: 'Failed to generate summary',
             details: error.message
         });
     }
