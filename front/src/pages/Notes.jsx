@@ -272,6 +272,46 @@ const Notes = () => {
         }
     };
 
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingNote(null);
+        setTitle('');
+        setContent('');
+        setTags(['']);
+        setPreviewUrl('');
+        setFile(null);
+        setSelectedBoxColor('white');
+      };
+
+
+    const resetNoteForm = () => {
+        setEditingNote(null);
+        setTitle('');
+        setContent('');
+        setTags(['']);
+        setPreviewUrl('');
+        setFile(null);
+        setSelectedBoxColor('white');
+        setDrawingData('');
+        setSelectedColor('black');
+        clearCanvas();
+      };
+
+
+      const handleOpenTextNoteModal = () => {
+        
+        setIsModalOpen(true);
+        resetNoteForm()
+      };
+      
+      const handleOpenDrawingModal = () => {
+        
+        setIsDrawingModalOpen(true);
+        resetNoteForm()
+      };
+      
+      
+
     {/*Aİ Aİ Aİ Aİ */ }
 
 
@@ -674,99 +714,139 @@ const Notes = () => {
                     </div>
                 ) : (
                     <>
-                    
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full max-w-7xl mx-auto px-4">
-                            {currentNotes.length === 0 ? (
-                                <div className="col-span-full text-center py-8">
-                                    <div className="flex justify-center mb-4">
-                                        <FaSearch className="text-4xl text-gray-400" />
-                                    </div>
-                                    <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                                        No Notes Found
-                                    </h3>
-                                    <p className="text-gray-600">
-                                        No notes match your search criteria. Try different filters or search terms.
-                                    </p>
-                                </div>
-                            ) : (
-                                
-                                currentNotes.map((note) => (
-                                    <div
-                                        key={note._id}
-                                        onClick={() => handleCardClick(note)}
-                                        className={`${getNoteColorClass(note.color)} relative rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-[300px] flex flex-col cursor-pointer ${note.color == "white" ? "text-black" : "!text-white"} ${note.pinned ? 'ring-2 ring-yellow-400' : ''}`}
-                                    >
-
-                                        <div className="p-6 flex flex-col h-full">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <h3 className="text-xl font-semibold truncate max-w-[250px] sm:max-w-[200px]">
-                                                    {note.title}
-                                                </h3>
-                                                <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleTogglePin(note._id, !note.pinned);
-                                                        }}
-                                                        className={`${note.pinned ? 'text-yellow-500' : 'text-gray-500'} hover:text-yellow-600 bg-white p-2 rounded-full cursor-pointer`}
-                                                        title={note.pinned ? "Unpin note" : "Pin note"}
-                                                    >
-                                                        <FaThumbtack />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteNote(note._id)}
-                                                        className="text-red-500 hover:text-red-700 cursor-pointer bg-white p-2 rounded-full"
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => handleEditClick(note, e)}
-                                                        className="text-blue-500 hover:text-blue-700 bg-white p-2 rounded-full cursor-pointer"
-                                                    >
-                                                        <FaEdit />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="flex-grow overflow-hidden">
-                                                {note.imgUrl && (
-                                                    <div className="mb-2">
-                                                        <img
-                                                            src={note.imgUrl}
-                                                            alt="Note"
-                                                            className="w-full h-32 object-contain rounded"
-                                                        />
-                                                    </div>
-                                                )}
-                                                {note.content && note.content.startsWith('data:image') ? (
-                                                    <img
-                                                        src={note.content}
-                                                        alt="Drawing"
-                                                        className="w-full h-32 object-contain"
-                                                    />
-                                                ) : (
-                                                    <p className="opacity-80 whitespace-pre-wrap line-clamp-6 sm:line-clamp-8 overflow-hidden text-ellipsis">
-                                                        {note.content}
-                                                    </p>
-                                                )}
-                                            </div>
-                                            {note.tags && Array.isArray(note.tags) && note.tags.length > 0 && (
-                                                <div className="flex flex-wrap gap-2 mt-4 overflow-hidden">
-                                                    {note.tags.map((tag, index) => (
-                                                        <span
-                                                            key={index}
-                                                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate max-w-[100px] sm:max-w-[120px]"
-                                                        >
-                                                            <FaTag className="mr-1 flex-shrink-0" />
-                                                            <span className="truncate">{tag}</span>
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
+                    {/*NotesPreviewCards*/}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full max-w-7xl mx-auto px-4">
+  {currentNotes.length === 0 ? (
+    <div className="col-span-full flex flex-col items-center justify-center py-12 px-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+      <div className="bg-gray-100 p-4 rounded-full mb-4">
+        <FaSearch className="text-4xl text-gray-400" />
+      </div>
+      <h3 className="text-xl font-semibold text-gray-700 mb-2">
+        No Notes Found
+      </h3>
+      <p className="text-gray-600 text-center max-w-md">
+        No notes match your search criteria. Try different filters or search terms.
+      </p>
+    </div>
+  ) : (
+    currentNotes.map((note) => (
+      <div
+        key={note._id}
+        onClick={() => handleCardClick(note)}
+        className={`${getNoteColorClass(note.color)} group relative rounded-lg shadow-sm hover:shadow-md transition-all duration-300 flex flex-col cursor-pointer overflow-hidden ${
+          note.color === "white" ? "text-gray-800" : "!text-white"
+        } ${note.pinned ? 'ring-2 ring-yellow-400' : ''}`}
+      >
+        {/* Card content */}
+        <div className="p-5 flex flex-col h-full">
+          {/* Card header with title and actions */}
+          <div className="flex justify-between items-start mb-3">
+            <h3 className="text-lg font-semibold truncate max-w-[180px] group-hover:max-w-full transition-all duration-300">
+              {note.title}
+            </h3>
+            
+            {/* Actions toolbar - visible on hover */}
+            <div 
+              className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleTogglePin(note._id, !note.pinned);
+                }}
+                className={`${
+                  note.pinned ? 'text-yellow-500 bg-yellow-50' : 'text-gray-600 bg-white/90'
+                } hover:text-yellow-600 p-1.5 rounded-full cursor-pointer shadow-sm`}
+                title={note.pinned ? "Unpin note" : "Pin note"}
+              >
+                <FaThumbtack className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => handleDeleteNote(note._id)}
+                className="text-red-500 hover:text-red-700 cursor-pointer bg-white/90 p-1.5 rounded-full shadow-sm"
+              >
+                <FaTrash className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={(e) => handleEditClick(note, e)}
+                className="text-blue-500 hover:text-blue-700 bg-white/90 p-1.5 rounded-full cursor-pointer shadow-sm"
+              >
+                <FaEdit className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            
+           
+          </div>
+          
+          {/* Card content area */}
+          <div className="flex-grow overflow-hidden mb-3">
+            {/* Image content */}
+            {note.imgUrl && (
+              <div className="mb-3 bg-black/5 rounded-md overflow-hidden">
+                <img
+                  src={note.imgUrl}
+                  alt="Note"
+                  className="w-full h-36 object-cover"
+                />
+              </div>
+            )}
+            
+            {/* Drawing content */}
+            {note.content && note.content.startsWith('data:image') ? (
+              <div className="bg-white rounded-md overflow-hidden">
+                <img
+                  src={note.content}
+                  alt="Drawing"
+                  className="w-full h-36 object-contain"
+                />
+              </div>
+            ) : (
+              <p className={`opacity-80 whitespace-pre-wrap wrap-break-word line-clamp-4 text-sm ${
+                note.color === "white" ? "text-gray-600" : ""
+              }`}>
+                {note.content}
+              </p>
+            )}
+          </div>
+          
+          {/* Tags and metadata footer */}
+          <div className="mt-auto">
+            {/* Created date */}
+            {note.createdAt && (
+              <div className="text-xs opacity-70 mb-2 flex items-center">
+                <FaCalendar className="mr-1 flex-shrink-0 w-3 h-3" />
+                {new Date(note.createdAt).toLocaleDateString()}
+              </div>
+            )}
+            
+            {/* Tags */}
+            {note.tags && Array.isArray(note.tags) && note.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 overflow-hidden">
+                {note.tags.slice(0, 3).map((tag, index) => (
+                  <span
+                    key={index}
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                      ${note.color === "white" ? "bg-blue-100 text-blue-800" : "bg-white/20 text-white"} 
+                      truncate max-w-[90px]`}
+                  >
+                    <FaTag className="mr-1 flex-shrink-0 w-2.5 h-2.5" />
+                    <span className="truncate">{tag}</span>
+                  </span>
+                ))}
+                {note.tags.length > 3 && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    +{note.tags.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    ))
+  )}
+</div>
 
                         {/* Pagination */}
                         {totalPages > 1 && (
@@ -813,20 +893,14 @@ const Notes = () => {
                 {/* Floating Action Buttons */}
                 <div className="fixed bottom-8 right-8 flex flex-col gap-4">
                     <button
-                        onClick={() => setIsDrawingModalOpen(true)}
+                         onClick={handleOpenDrawingModal}
                         className="bg-neutral-800 text-white p-4 rounded-full shadow-lg hover:bg-neutral-950 transition-colors cursor-pointer"
                         title="Add Drawing Note"
                     >
                         <FaPencilAlt className="text-2xl" />
                     </button>
                     <button
-                        onClick={() => {
-                            setEditingNote(null);
-                            setTitle('');
-                            setContent('');
-                            setTags(['']);
-                            setIsModalOpen(true);
-                        }}
+                        onClick={handleOpenTextNoteModal}
                         className="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-colors cursor-pointer"
                         title="Add Text Note"
                     >
@@ -925,7 +999,7 @@ const Notes = () => {
         {/* Text content - increased padding and better typography */}
         {(!displayNote.content || !displayNote.content.startsWith('data:image')) && (
           <div className="px-8 py-6">
-            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+            <p className="text-gray-700 whitespace-pre-wrap wrap-break-word leading-relaxed text-base">
               {displayNote.content}
             </p>
           </div>
@@ -982,7 +1056,7 @@ const Notes = () => {
                                         : 'Add Note'}
                                 </h3>
                                 <button
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={handleCloseModal}
                                     className="text-gray-500 hover:text-gray-700 cursor-pointer"
                                 >
                                     <FaTimes className="text-xl" />
