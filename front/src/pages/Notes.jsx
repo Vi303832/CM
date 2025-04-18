@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
-import { FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight, FaPencilAlt, FaImage, FaThumbtack, FaMagic } from 'react-icons/fa';
+import { FaCalendar     ,FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight, FaPencilAlt, FaImage, FaThumbtack, FaMagic } from 'react-icons/fa';
 import { notesAPI } from '../api';
 
 
@@ -674,6 +674,7 @@ const Notes = () => {
                     </div>
                 ) : (
                     <>
+                    
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full max-w-7xl mx-auto px-4">
                             {currentNotes.length === 0 ? (
                                 <div className="col-span-full text-center py-8">
@@ -688,17 +689,14 @@ const Notes = () => {
                                     </p>
                                 </div>
                             ) : (
+                                
                                 currentNotes.map((note) => (
                                     <div
                                         key={note._id}
                                         onClick={() => handleCardClick(note)}
                                         className={`${getNoteColorClass(note.color)} relative rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-[300px] flex flex-col cursor-pointer ${note.color == "white" ? "text-black" : "!text-white"} ${note.pinned ? 'ring-2 ring-yellow-400' : ''}`}
                                     >
-                                        {note.pinned && (
-                                            <div className="absolute top-2 right-2 text-yellow-500 bg-white p-1 rounded-full">
-                                                <FaThumbtack />
-                                            </div>
-                                        )}
+
                                         <div className="p-6 flex flex-col h-full">
                                             <div className="flex justify-between items-start mb-4">
                                                 <h3 className="text-xl font-semibold truncate max-w-[250px] sm:max-w-[200px]">
@@ -837,122 +835,141 @@ const Notes = () => {
                 </div>
 
                 {/* Display Modal */}
-                {isDisplayModalOpen && displayNote && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-lg p-8 w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto shadow-xl">
-                            <div className="flex justify-between items-center mb-6">
-                                <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-gray-800 break-words">{displayNote.title}</h3>
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        {new Date(displayNote.createdAt).toLocaleDateString('tr-TR', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => setIsDisplayModalOpen(false)}
-                                    className="text-gray-500 hover:text-gray-700 cursor-pointer ml-4"
-                                >
-                                    <FaTimes className="text-2xl" />
-                                </button>
-                            </div>
-                            <div className="flex justify-end mb-4">
-                                <button
-                                    onClick={handleSummarize}
-                                    disabled={isSummarizing}
-                                    className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors cursor-pointer flex items-center gap-2"
-                                >
-                                    {isSummarizing ? (
-                                        <>
-                                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                                            Summarizing...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <FaMagic className="text-sm" />
-                                            Summarize with AI
-                                        </>
-                                    )}
-                                </button>
-                            </div>
+{isDisplayModalOpen && displayNote && (
+  <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[95vh] overflow-hidden flex flex-col">
+      {/* Header */}
+      <div className="p-6 border-b border-gray-300">
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-800">{displayNote.title}</h3>
+            <div className="flex items-center mt-1 text-sm text-gray-500">
+              <FaCalendar className="w-4 h-4 mr-1" />
+              <span>
+                {new Date(displayNote.createdAt).toLocaleDateString('tr-TR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsDisplayModalOpen(false)}
+            className="cursor-pointer w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all"
+          >
+            <FaTimes className="text-xl" />
+          </button>
+        </div>
+      </div>
 
-                            {displayNote.imgUrl && (
-                                <div className="mb-4">
-                                    <img
-                                        src={displayNote.imgUrl}
-                                        alt="Note"
-                                        className="w-full max-h-[50vh] object-contain rounded"
-                                    />
-                                </div>
-                            )}
+      {/* Scrollable content - now with more vertical space */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Image with overlay if exists */}
+        {displayNote.imgUrl && (
+          <div className="relative">
+            <img
+              src={displayNote.imgUrl}
+              alt="Note"
+              className="w-full max-h-[60vh] object-cover"
+            />
+            {displayNote.tags && displayNote.tags.length > 0 && (
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end">
+                <div className="p-6 w-full">
+                  <span
+                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-blue-800"
+                  >
+                    <FaTag className="mr-2 h-3 w-3" />
+                    {displayNote.tags[0]}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
-                            <div className="mb-8">
-                                <div className="mb-8">
-                                    {showSummary && summary ? (
-                                        <div className="bg-purple-50 rounded-lg p-6 mb-4 border-l-4 border-purple-500">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <h4 className="font-semibold text-purple-800">AI Summary</h4>
-                                                <button
-                                                    onClick={() => setShowSummary(false)}
-                                                    className="text-purple-600 hover:text-purple-800"
-                                                >
-                                                    <FaTimes />
-                                                </button>
-                                            </div>
-                                            <p className="text-gray-700">{summary}</p>
-                                        </div>
-                                    ) : null}
+        {/* Drawing content if exists - more space */}
+        {displayNote.content && displayNote.content.startsWith('data:image') && (
+          <div className="p-8">
+            <img
+              src={displayNote.content}
+              alt="Drawing"
+              className="w-full rounded-lg shadow-md"
+            />
+          </div>
+        )}
 
-                                    <div className="bg-gray-50 rounded-lg p-6">
-                                        {displayNote.content && displayNote.content.startsWith('data:image') ? (
-                                            <img
-                                                src={displayNote.content}
-                                                alt="Drawing"
-                                                className="w-full rounded-lg"
-                                            />
-                                        ) : (
-                                            <p className="text-gray-700 whitespace-pre-wrap w-[90%] wrap-break-word text-lg leading-relaxed">
-                                                {displayNote.content}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
+        {/* AI Summary if exists - improved styling */}
+        {showSummary && summary && (
+          <div className="px-8 pt-6">
+            <div className="bg-purple-50 rounded-lg p-5 border-l-4 border-purple-500 mb-6 shadow-sm">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-semibold text-purple-800 flex items-center">
+                  <FaMagic className="mr-2 h-4 w-4" />
+                  AI Summary
+                </h4>
+                <button
+                  onClick={() => setShowSummary(false)}
+                  className="text-purple-600 hover:text-purple-800 cursor-pointer"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+              <p className="text-gray-700 leading-relaxed">{summary}</p>
+            </div>
+          </div>
+        )}
 
-                                <div className="bg-gray-50 rounded-lg p-6">
-                                    {displayNote.content && displayNote.content.startsWith('data:image') ? (
-                                        <img
-                                            src={displayNote.content}
-                                            alt="Drawing"
-                                            className="w-full rounded-lg"
-                                        />
-                                    ) : (
-                                        <p className="text-gray-700 whitespace-pre-wrap w-[90%] wrap-break-word text-lg leading-relaxed">
-                                            {displayNote.content}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
+        {/* Text content - increased padding and better typography */}
+        {(!displayNote.content || !displayNote.content.startsWith('data:image')) && (
+          <div className="px-8 py-6">
+            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+              {displayNote.content}
+            </p>
+          </div>
+        )}
 
-                            {displayNote.tags && Array.isArray(displayNote.tags) && displayNote.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                    {displayNote.tags.map((tag, index) => (
-                                        <span
-                                            key={index}
-                                            className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
-                                        >
-                                            <FaTag className="mr-2" />
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
+        {/* Tags - improved layout */}
+        {displayNote.tags && Array.isArray(displayNote.tags) && displayNote.tags.length > 0 && (
+          <div className="px-8 pb-8 flex flex-wrap gap-2">
+            {displayNote.tags.map((tag, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
+              >
+                <FaTag className="mr-2 h-3 w-3" />
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Footer with action button - improved border and spacing */}
+      <div className="p-6 border-t border-gray-300 flex justify-end bg-gray-50">
+        <button
+          onClick={handleSummarize}
+          disabled={isSummarizing}
+          className="px-5 py-2.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 cursor-pointer transition-colors flex items-center gap-2 shadow-sm"
+        >
+          {isSummarizing ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+              Summarizing...
+            </>
+          ) : (
+            <>
+              <FaMagic className="w-4 h-4 " />
+              Summarize with AI
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
                 {/*Add Note*/}
                 {/* Edit Modal */}
                 {isModalOpen && (
