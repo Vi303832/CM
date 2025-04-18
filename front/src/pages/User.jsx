@@ -11,6 +11,7 @@ const User = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [activeSection, setActiveSection] = useState('profile');
     const [formData, setFormData] = useState({
+
         email: '',
         currentPassword: '',
         newPassword: '',
@@ -20,6 +21,10 @@ const User = () => {
     const [success, setSuccess] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [notes, setNotes] = useState([]);
+    const [passwordErrors, setPasswordErrors] = useState({
+        length: false,
+        match: false
+    });
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -28,6 +33,7 @@ const User = () => {
                 const userData = await userAPI.getProfile();
                 setUser(userData);
                 setFormData({
+
                     email: userData.email,
                     currentPassword: '',
                     newPassword: '',
@@ -37,11 +43,25 @@ const User = () => {
                 setNotes(notesData);
             } catch (err) {
                 setError('Failed to fetch data');
+                toast.error("Failed to load profile data", {
+                    position: "top-right",
+                    autoClose: 3000
+                });
             }
         };
 
         fetchData();
     }, []);
+
+    // Validate password as user types
+    useEffect(() => {
+        if (formData.newPassword) {
+            setPasswordErrors({
+                length: formData.newPassword.length < 8,
+                match: formData.newPassword !== formData.confirmPassword && formData.confirmPassword !== ''
+            });
+        }
+    }, [formData.newPassword, formData.confirmPassword]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -58,11 +78,23 @@ const User = () => {
         setIsLoading(true);
 
         try {
-            if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
-                throw new Error('New passwords do not match');
+            // Password validation
+            if (formData.newPassword) {
+                if (formData.newPassword.length < 8) {
+                    throw new Error('Password must be at least 8 characters');
+                }
+
+                if (formData.newPassword !== formData.confirmPassword) {
+                    throw new Error('New passwords do not match');
+                }
+
+                if (!formData.currentPassword) {
+                    throw new Error('Current password is required to set a new password');
+                }
             }
 
             const updateData = {
+
                 email: formData.email,
                 ...(formData.newPassword && {
                     currentPassword: formData.currentPassword,
@@ -73,9 +105,18 @@ const User = () => {
             const updatedUser = await userAPI.updateProfile(updateData);
             setUser(updatedUser);
             setSuccess('Profile updated successfully');
+            toast.success("Profile updated successfully!", {
+                position: "top-right",
+                autoClose: 3000
+            });
             setIsEditing(false);
         } catch (err) {
-            setError(err.response?.data?.message || err.message || 'Failed to update profile');
+            const errorMessage = err.response?.data?.message || err.message || 'Failed to update profile';
+            setError(errorMessage);
+            toast.error(errorMessage, {
+                position: "top-right",
+                autoClose: 3000
+            });
         } finally {
             setIsLoading(false);
         }
@@ -87,16 +128,15 @@ const User = () => {
             localStorage.removeItem('token');
             toast.success("Successfully logged out!", {
                 position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
+                autoClose: 3000
             });
             navigate('/login');
         } catch (err) {
             setError('Failed to logout');
+            toast.error("Failed to logout", {
+                position: "top-right",
+                autoClose: 3000
+            });
         }
     };
 
@@ -111,6 +151,7 @@ const User = () => {
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
             <Navbar />
+            <ToastContainer />
 
             <div className="flex flex-1 pt-16">
                 {/* Sidebar */}
@@ -121,7 +162,7 @@ const User = () => {
                                 <FaUser className="text-blue-600 text-2xl" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-semibold text-gray-800">{user.username}</h2>
+                                <h2 className="text-lg font-semibold text-gray-800">{user.name || user.username}</h2>
                                 <p className="text-sm text-gray-500 truncate max-w-[180px]">@{user.username}</p>
                             </div>
                         </div>
@@ -173,8 +214,8 @@ const User = () => {
                                         <FaUser className="text-blue-600 text-4xl" />
                                     </div>
                                     <div>
-                                        <h1 className="text-3xl font-bold text-gray-800">{user.username}</h1>
-                                        <p className="text-gray-500 mt-1">{user.email}</p>
+                                        <h1 className="text-3xl font-bold text-gray-800">{user.name || user.username}</h1>
+                                        <p className="text-gray-500 mt-1">@{user.username}</p>
                                         <div className="flex items-center mt-2 text-gray-500">
                                             <FaCalendarAlt className="mr-2" />
                                             <span>Member since {new Date(user.createdAt).toLocaleDateString()}</span>
@@ -201,7 +242,7 @@ const User = () => {
                                         <div>
                                             <h3 className="text-lg font-semibold text-gray-800">Recent Activity</h3>
                                             <p className="text-3xl font-bold text-green-600 mt-2">
-                                                {notes.length > 0 ? new Date(notes[0].createdAt).toLocaleDateString() : 'None'}
+                                                {notes.length > 0 ? new Date(Math.max(...notes.map(note => new Date(note.updatedAt || note.createdAt)))).toLocaleDateString() : 'None'}
                                             </p>
                                         </div>
                                         <div className="bg-green-100 p-3 rounded-full">
@@ -237,9 +278,25 @@ const User = () => {
                                                 </div>
                                             </div>
                                         ))}
+                                        {notes.length > 3 && (
+                                            <button
+                                                onClick={() => navigate('/notes')}
+                                                className="text-blue-600 hover:text-blue-800 font-medium text-sm mt-2"
+                                            >
+                                                View all notes
+                                            </button>
+                                        )}
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500">No notes yet</p>
+                                    <div className="text-center py-6">
+                                        <p className="text-gray-500">No notes yet</p>
+                                        <button
+                                            onClick={() => navigate('/notes/create')}
+                                            className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                        >
+                                            Create your first note
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -275,22 +332,7 @@ const User = () => {
 
                                 <form onSubmit={handleSubmit}>
                                     <div className="space-y-6">
-                                        {/* Username Field (Read-only) */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Username
-                                            </label>
-                                            <div className="flex items-center">
-                                                <FaUser className="text-gray-400 mr-2" />
-                                                <input
-                                                    type="text"
-                                                    value={user.username}
-                                                    disabled
-                                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100"
-                                                />
-                                            </div>
-                                            <p className="text-sm text-gray-500 mt-1">Username cannot be changed</p>
-                                        </div>
+
 
                                         {/* Email Field */}
                                         <div>
@@ -308,6 +350,23 @@ const User = () => {
                                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-colors duration-200"
                                                 />
                                             </div>
+                                        </div>
+
+                                        {/* Username Field */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Username
+                                            </label>
+                                            <div className="flex items-center">
+                                                <FaAt className="text-gray-400 mr-2" />
+                                                <input
+                                                    type="text"
+                                                    value={user.username}
+                                                    disabled
+                                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100"
+                                                />
+                                            </div>
+                                            <p className="text-sm text-gray-500 mt-1">Username cannot be changed</p>
                                         </div>
 
                                         {/* Password Fields */}
@@ -329,6 +388,9 @@ const User = () => {
                                                                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                                                             />
                                                         </div>
+                                                        {formData.newPassword && !formData.currentPassword && (
+                                                            <p className="text-sm text-red-500 mt-1">Required to change password</p>
+                                                        )}
                                                     </div>
 
                                                     <div className="mt-4">
@@ -345,6 +407,9 @@ const User = () => {
                                                                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                                                             />
                                                         </div>
+                                                        {passwordErrors.length && formData.newPassword && (
+                                                            <p className="text-sm text-red-500 mt-1">Password must be at least 8 characters</p>
+                                                        )}
                                                     </div>
 
                                                     <div className="mt-4">
@@ -361,6 +426,9 @@ const User = () => {
                                                                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                                                             />
                                                         </div>
+                                                        {passwordErrors.match && formData.confirmPassword && (
+                                                            <p className="text-sm text-red-500 mt-1">Passwords do not match</p>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </>
@@ -374,11 +442,14 @@ const User = () => {
                                                     onClick={() => {
                                                         setIsEditing(false);
                                                         setFormData({
+
                                                             email: user.email,
                                                             currentPassword: '',
                                                             newPassword: '',
                                                             confirmPassword: ''
                                                         });
+                                                        setPasswordErrors({ length: false, match: false });
+                                                        setError(null);
                                                     }}
                                                     className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
                                                 >
@@ -386,7 +457,7 @@ const User = () => {
                                                 </button>
                                                 <button
                                                     type="submit"
-                                                    disabled={isLoading}
+                                                    disabled={isLoading || (formData.newPassword && (passwordErrors.length || passwordErrors.match))}
                                                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer transition-colors duration-200"
                                                 >
                                                     {isLoading ? 'Saving...' : 'Save Changes'}
