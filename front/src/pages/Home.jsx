@@ -122,7 +122,7 @@ const Home = () => {
                                             </div>
                                             <div className="mt-4 flex justify-end">
                                                 <div className="bg-blue-600 text-white p-2 rounded-full shadow-lg">
-                                                    <FaPenNib className="h-5 w-5" />
+                                                    <FaEdit className="h-5 w-5" />
                                                 </div>
                                             </div>
                                         </div>
