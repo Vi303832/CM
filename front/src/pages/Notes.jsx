@@ -69,6 +69,7 @@ const Notes = () => {
         { name: 'Blue', value: '#2563eb' },
         { name: 'Red', value: '#dc2626' },
         { name: 'Green', value: '#16a34a' },
+        { name: 'Yellow', value: '#eab308' },
     ];
 
 
@@ -177,6 +178,7 @@ const Notes = () => {
             case '#2563eb': return 'bg-blue-600';
             case '#dc2626': return 'bg-red-600';
             case '#16a34a': return 'bg-green-600';
+            case '#eab308': return 'bg-yellow-500';
             case 'black': return 'bg-black';
             default: return 'bg-white';
         }
@@ -730,118 +732,125 @@ const Notes = () => {
     </div>
   ) : (
     currentNotes.map((note) => (
-      <div
+        <div
         key={note._id}
         onClick={() => handleCardClick(note)}
-        className={`${getNoteColorClass(note.color)} group relative rounded-lg shadow-sm hover:shadow-md transition-all duration-300 flex flex-col cursor-pointer overflow-hidden ${
-          note.color === "white" ? "text-gray-800" : "!text-white"
-        } ${note.pinned ? 'ring-2 ring-yellow-400' : ''}`}
+        className={`${getNoteColorClass(note.color)} group relative rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col cursor-pointer h-[280px] ${note.pinned ? 'ring-2 ring-yellow-400' : ''}`}
       >
-        {/* Card content */}
-        <div className="p-5 flex flex-col h-full">
-          {/* Card header with title and actions */}
-          <div className="flex justify-between items-start mb-3">
-            <h3 className="text-lg font-semibold truncate max-w-[180px] group-hover:max-w-full transition-all duration-300">
+        {/* Absolute positioned action buttons - visible on hover */}
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1 z-10">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleTogglePin(note._id, !note.pinned);
+            }}
+            className={`${note.pinned ? 'text-yellow-600 bg-yellow-100' : 'text-gray-600 bg-white/90'} hover:text-yellow-700 p-1.5 rounded-full cursor-pointer shadow-sm`}
+            title={note.pinned ? "Unpin note" : "Pin note"}
+          >
+            <FaThumbtack className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEditClick(note, e);
+            }}
+            className="text-blue-600 hover:text-blue-800 bg-white/90 p-1.5 rounded-full cursor-pointer shadow-sm"
+            title="Edit note"
+          >
+            <FaEdit className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteNote(note._id);
+            }}
+            className="text-red-600 hover:text-red-800 bg-white/90 p-1.5 rounded-full cursor-pointer shadow-sm"
+            title="Delete note"
+          >
+            <FaTrash className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        
+        {/* Image header if exists */}
+        {note.imgUrl && (
+          <div className="h-32 overflow-hidden">
+            <img
+              src={note.imgUrl}
+              alt="Note"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+        
+        {/* Card content - main area */}
+        <div className={`flex flex-col h-full ${note.imgUrl ? 'p-4 pb-0' : 'p-5 pb-0'} ${note.color === "white" ? "text-gray-800" : note.color === "#eab308" ? "text-gray-900" : "text-white"}`}>
+          {/* Title and pin indicator */}
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-lg font-bold truncate max-w-[180px] group-hover:max-w-full transition-all duration-300">
               {note.title}
             </h3>
-            
-            {/* Actions toolbar - visible on hover */}
-            <div 
-              className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" 
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleTogglePin(note._id, !note.pinned);
-                }}
-                className={`${
-                  note.pinned ? 'text-yellow-500 bg-yellow-50' : 'text-gray-600 bg-white/90'
-                } hover:text-yellow-600 p-1.5 rounded-full cursor-pointer shadow-sm`}
-                title={note.pinned ? "Unpin note" : "Pin note"}
-              >
-                <FaThumbtack className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => handleDeleteNote(note._id)}
-                className="text-red-500 hover:text-red-700 cursor-pointer bg-white/90 p-1.5 rounded-full shadow-sm"
-              >
-                <FaTrash className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={(e) => handleEditClick(note, e)}
-                className="text-blue-500 hover:text-blue-700 bg-white/90 p-1.5 rounded-full cursor-pointer shadow-sm"
-              >
-                <FaEdit className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            
-           
-          </div>
-          
-          {/* Card content area */}
-          <div className="flex-grow overflow-hidden mb-3">
-            {/* Image content */}
-            {note.imgUrl && (
-              <div className="mb-3 bg-black/5 rounded-md overflow-hidden">
-                <img
-                  src={note.imgUrl}
-                  alt="Note"
-                  className="w-full h-36 object-cover"
-                />
+            {note.pinned && (
+              <div className="bg-yellow-300 rounded-full p-1 ml-2">
+                <FaThumbtack className="w-3 h-3 text-yellow-700" />
               </div>
             )}
-            
+          </div>
+          
+          {/* Content area */}
+          <div className="flex-grow overflow-hidden mb-3">
             {/* Drawing content */}
             {note.content && note.content.startsWith('data:image') ? (
-              <div className="bg-white rounded-md overflow-hidden">
+              <div className={`${note.color === "white" ? "bg-gray-50" : "bg-white/10"} rounded-md overflow-hidden`}>
                 <img
                   src={note.content}
                   alt="Drawing"
-                  className="w-full h-36 object-contain"
+                  className="w-full h-28 object-contain"
                 />
               </div>
             ) : (
-              <p className={`opacity-80 whitespace-pre-wrap wrap-break-word line-clamp-4 text-sm ${
-                note.color === "white" ? "text-gray-600" : ""
-              }`}>
+              <p className={`whitespace-pre-wrap line-clamp-3 text-sm ${note.color === "white" ? "text-gray-600" : note.color === "#eab308" ? "text-gray-800" : ""}`}>
                 {note.content}
               </p>
             )}
           </div>
-          
-          {/* Tags and metadata footer */}
-          <div className="mt-auto">
-            {/* Created date */}
-            {note.createdAt && (
-              <div className="text-xs opacity-70 mb-2 flex items-center">
-                <FaCalendar className="mr-1 flex-shrink-0 w-3 h-3" />
-                {new Date(note.createdAt).toLocaleDateString()}
-              </div>
-            )}
-            
-            {/* Tags */}
-            {note.tags && Array.isArray(note.tags) && note.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 overflow-hidden">
-                {note.tags.slice(0, 3).map((tag, index) => (
-                  <span
-                    key={index}
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
-                      ${note.color === "white" ? "bg-blue-100 text-blue-800" : "bg-white/20 text-white"} 
-                      truncate max-w-[90px]`}
-                  >
-                    <FaTag className="mr-1 flex-shrink-0 w-2.5 h-2.5" />
-                    <span className="truncate">{tag}</span>
-                  </span>
-                ))}
-                {note.tags.length > 3 && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                    +{note.tags.length - 3}
-                  </span>
-                )}
-              </div>
-            )}
+        </div>
+        
+        {/* Footer with date and tags - separate section with inset styling */}
+        <div className={`px-4 py-3 mt-auto rounded-b-lg ${note.color === "white" ? "bg-gray-100 border-t border-gray-200" : 
+          note.color === "#eab308" ? "bg-yellow-600/20 border-t border-yellow-500/20" : 
+          note.color === "#2563eb" ? "bg-blue-700/20 border-t border-blue-500/20" : 
+          note.color === "#dc2626" ? "bg-red-700/20 border-t border-red-500/20" : 
+          note.color === "#16a34a" ? "bg-green-700/20 border-t border-green-500/20" : 
+          note.color === "black" ? "bg-black/20 border-t border-white/10" : "bg-gray-100"}`}>
+          {/* Created date */}
+          <div className={`text-xs mb-2 flex items-center ${note.color === "white" ? "text-gray-500" : 
+            note.color === "#eab308" ? "text-gray-800" : "text-white/80"}`}>
+            <FaCalendar className="mr-1 flex-shrink-0 w-3 h-3" />
+            {new Date(note.createdAt).toLocaleDateString()}
           </div>
+          
+          {/* Tags */}
+          {note.tags && Array.isArray(note.tags) && note.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 overflow-hidden">
+              {note.tags.slice(0, 3).map((tag, index) => (
+                <span
+                  key={index}
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                    ${note.color === "white" ? "bg-blue-100 text-blue-800" : 
+                      note.color === "#eab308" ? "bg-yellow-200 text-yellow-900" : "bg-white/20 text-white"} 
+                    truncate max-w-[90px]`}
+                >
+                  <FaTag className="mr-1 flex-shrink-0 w-2.5 h-2.5" />
+                  <span className="truncate">{tag}</span>
+                </span>
+              ))}
+              {note.tags.length > 3 && (
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${note.color === "white" || note.color === "#eab308" ? "bg-gray-200 text-gray-700" : "bg-white/20 text-white"}`}>
+                  +{note.tags.length - 3}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
     ))
@@ -913,7 +922,9 @@ const Notes = () => {
   <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
     <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[95vh] overflow-hidden flex flex-col">
       {/* Header */}
+      
       <div className="p-6 border-b border-gray-300">
+        
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-2xl font-bold text-gray-800">{displayNote.title}</h3>
