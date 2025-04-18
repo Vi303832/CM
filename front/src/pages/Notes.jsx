@@ -30,6 +30,7 @@ const Notes = () => {
     const [content, setContent] = useState('');
     const [tags, setTags] = useState(['']);
     const [isLoading, setIsLoading] = useState(false);
+ const [hoveredNoteId, setHoveredNoteId] = useState(null);
     const [error, setError] = useState(null);
     const [notes, setNotes] = useState([]);
     const [editingNote, setEditingNote] = useState(null);
@@ -177,8 +178,8 @@ const Notes = () => {
             case 'white': return 'bg-white ';
             case '#2563eb': return 'bg-blue-600';
             case '#dc2626': return 'bg-red-600';
-            case '#16a34a': return 'bg-green-600';
-            case '#eab308': return 'bg-yellow-500';
+            case '#16a34a': return 'bg-[#059669]';
+            case '#eab308': return 'bg-[#F59E0B]';
             case 'black': return 'bg-black';
             default: return 'bg-white';
         }
@@ -734,8 +735,10 @@ const Notes = () => {
     currentNotes.map((note) => (
         <div
         key={note._id}
+        onMouseEnter={() => setHoveredNoteId(note._id)}
+        onMouseLeave={() => setHoveredNoteId(null)}
         onClick={() => handleCardClick(note)}
-        className={`${getNoteColorClass(note.color)} group relative rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col cursor-pointer h-[280px] ${note.pinned ? 'ring-2 ring-yellow-400' : ''}`}
+        className={`${getNoteColorClass(note.color)} group relative rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col cursor-pointer h-[340px] ${note.pinned ? 'ring-2 ring-yellow-400' : ''}`}
       >
         {/* Absolute positioned action buttons - visible on hover */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1 z-10">
@@ -758,8 +761,7 @@ const Notes = () => {
             title="Edit note"
           >
             <FaEdit className="w-3.5 h-3.5" />
-          </button>
-          <button
+          </button>          <button
             onClick={(e) => {
               e.stopPropagation();
               handleDeleteNote(note._id);
@@ -771,9 +773,9 @@ const Notes = () => {
           </button>
         </div>
         
-        {/* Image header if exists */}
+        {/* Image header if exists - doubled in size */}
         {note.imgUrl && (
-          <div className="h-32 overflow-hidden">
+          <div className="h-64 overflow-hidden">
             <img
               src={note.imgUrl}
               alt="Note"
@@ -782,8 +784,8 @@ const Notes = () => {
           </div>
         )}
         
-        {/* Card content - main area */}
-        <div className={`flex flex-col h-full ${note.imgUrl ? 'p-4 pb-0' : 'p-5 pb-0'} ${note.color === "white" ? "text-gray-800" : note.color === "#eab308" ? "text-gray-900" : "text-white"}`}>
+        {/* Card content - main area with padding for footer */}
+        <div className={`flex flex-col h-full ${note.imgUrl ? 'p-4 pb-14' : 'p-5 pb-14'} ${note.color === "white" ? "text-gray-800" : note.color === "#eab308" ? "text-gray-900" : "text-white"}`}>
           {/* Title and pin indicator */}
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-lg font-bold truncate max-w-[180px] group-hover:max-w-full transition-all duration-300">
@@ -808,19 +810,20 @@ const Notes = () => {
                 />
               </div>
             ) : (
-              <p className={`whitespace-pre-wrap line-clamp-3 text-sm ${note.color === "white" ? "text-gray-600" : note.color === "#eab308" ? "text-gray-800" : ""}`}>
+              <p className={`whitespace-pre-wrap ${note.imgUrl ? "line-clamp-4" : "line-clamp-[9]" } text-sm ${note.color === "white" ? "text-gray-600" : note.color === "#eab308" ? "text-gray-800" : ""}`}>
                 {note.content}
               </p>
             )}
           </div>
         </div>
         
-        {/* Footer with date and tags - separate section with inset styling */}
-        <div className={`px-4 py-3 mt-auto rounded-b-lg ${note.color === "white" ? "bg-gray-100 border-t border-gray-200" : 
-          note.color === "#eab308" ? "bg-yellow-600/20 border-t border-yellow-500/20" : 
-          note.color === "#2563eb" ? "bg-blue-700/20 border-t border-blue-500/20" : 
-          note.color === "#dc2626" ? "bg-red-700/20 border-t border-red-500/20" : 
-          note.color === "#16a34a" ? "bg-green-700/20 border-t border-green-500/20" : 
+        {/* Footer with date and tags - absolute positioning for hover effect */}
+        <div className={`px-4 py-3 rounded-b-lg absolute bottom-0 left-0 right-0 z-20 transform ${hoveredNoteId === note._id ? 'translate-y-0' : 'translate-y-full'} transition-transform duration-300 ease-in-out ${note.color === "white" ? "bg-gray-100 border-t border-gray-200" : 
+note.color === "#eab308" ? "bg-[#D97706] border-t border-[#FBBF24]" : 
+note.color === "#2563eb" ? "bg-[#1D4ED8] border-t border-[#3B82F6]" : 
+note.color === "#dc2626" ? "bg-[#B91C1C] border-t border-[#EF4444]" : 
+note.color === "#16a34a" ? "bg-[#047857] border-t border-[#10B981]" : 
+ 
           note.color === "black" ? "bg-black/20 border-t border-white/10" : "bg-gray-100"}`}>
           {/* Created date */}
           <div className={`text-xs mb-2 flex items-center ${note.color === "white" ? "text-gray-500" : 
