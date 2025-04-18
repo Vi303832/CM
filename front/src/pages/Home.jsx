@@ -45,7 +45,10 @@ const Home = () => {
                                 <div className="flex space-x-4">
                                     <button
                                         onClick={() => navigate('/notes')}
-                                        className="px-6 py-2 bg-white text-blue-600 rounded-md font-medium hover:bg-blue-50 flex items-center cursor-pointer"
+                                        className="px-6 py-2 bg-white text-blue-600 rounded-md font-medium flex items-center 
+    relative transition-all duration-300 
+    border-2 border-transparent
+    hover:scale-105 hover:border-white hover:bg-blue-600 hover:text-white cursor-pointer"
                                     >
                                         Get Started
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
@@ -233,14 +236,17 @@ const Home = () => {
             </section>
 
             {/* CTA Section */}
-            <section className="bg-blue-600 text-white py-16 px-4">
+            <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16 px-4">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-3xl font-bold mb-4">Ready to organize your thoughts?</h2>
                     <p className="mb-8">Start using Notes today and experience the difference. It's completely free!</p>
                     <div className="flex flex-wrap justify-center gap-4">
                         <button
                             onClick={() => navigate('/notes')}
-                            className="px-6 py-3 bg-white text-blue-600 rounded-md font-medium hover:bg-blue-50 flex items-center cursor-pointer"
+                            className="px-6 py-3 bg-white text-blue-600 rounded-md font-medium flex items-center 
+    relative transition-all duration-300 
+    border-2 border-transparent
+    hover:scale-105 hover:border-white hover:bg-blue-600 hover:text-white cursor-pointer"
                         >
                             Get Started Now
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
