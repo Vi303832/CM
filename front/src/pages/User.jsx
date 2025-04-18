@@ -5,12 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 const User = () => {
     const [user, setUser] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [activeSection, setActiveSection] = useState('profile');
     const [formData, setFormData] = useState({
-        name: '',
         email: '',
         currentPassword: '',
         newPassword: '',
@@ -28,7 +28,6 @@ const User = () => {
                 const userData = await userAPI.getProfile();
                 setUser(userData);
                 setFormData({
-                    name: userData.name,
                     email: userData.email,
                     currentPassword: '',
                     newPassword: '',
@@ -64,7 +63,6 @@ const User = () => {
             }
 
             const updateData = {
-                name: formData.name,
                 email: formData.email,
                 ...(formData.newPassword && {
                     currentPassword: formData.currentPassword,
@@ -123,7 +121,7 @@ const User = () => {
                                 <FaUser className="text-blue-600 text-2xl" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-semibold text-gray-800">{user.name}</h2>
+                                <h2 className="text-lg font-semibold text-gray-800">{user.username}</h2>
                                 <p className="text-sm text-gray-500 truncate max-w-[180px]">@{user.username}</p>
                             </div>
                         </div>
@@ -175,8 +173,8 @@ const User = () => {
                                         <FaUser className="text-blue-600 text-4xl" />
                                     </div>
                                     <div>
-                                        <h1 className="text-3xl font-bold text-gray-800">{user.name}</h1>
-                                        <p className="text-gray-500 mt-1">@{user.username}</p>
+                                        <h1 className="text-3xl font-bold text-gray-800">{user.username}</h1>
+                                        <p className="text-gray-500 mt-1">{user.email}</p>
                                         <div className="flex items-center mt-2 text-gray-500">
                                             <FaCalendarAlt className="mr-2" />
                                             <span>Member since {new Date(user.createdAt).toLocaleDateString()}</span>
@@ -277,22 +275,21 @@ const User = () => {
 
                                 <form onSubmit={handleSubmit}>
                                     <div className="space-y-6">
-                                        {/* Name Field */}
+                                        {/* Username Field (Read-only) */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Name
+                                                Username
                                             </label>
                                             <div className="flex items-center">
                                                 <FaUser className="text-gray-400 mr-2" />
                                                 <input
                                                     type="text"
-                                                    name="name"
-                                                    value={formData.name}
-                                                    onChange={handleInputChange}
-                                                    disabled={!isEditing}
-                                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-colors duration-200"
+                                                    value={user.username}
+                                                    disabled
+                                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100"
                                                 />
                                             </div>
+                                            <p className="text-sm text-gray-500 mt-1">Username cannot be changed</p>
                                         </div>
 
                                         {/* Email Field */}
@@ -311,23 +308,6 @@ const User = () => {
                                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-colors duration-200"
                                                 />
                                             </div>
-                                        </div>
-
-                                        {/* Username Field */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Username
-                                            </label>
-                                            <div className="flex items-center">
-                                                <FaAt className="text-gray-400 mr-2" />
-                                                <input
-                                                    type="text"
-                                                    value={user.username}
-                                                    disabled
-                                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100"
-                                                />
-                                            </div>
-                                            <p className="text-sm text-gray-500 mt-1">Username cannot be changed</p>
                                         </div>
 
                                         {/* Password Fields */}
@@ -394,7 +374,6 @@ const User = () => {
                                                     onClick={() => {
                                                         setIsEditing(false);
                                                         setFormData({
-                                                            name: user.name,
                                                             email: user.email,
                                                             currentPassword: '',
                                                             newPassword: '',
