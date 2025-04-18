@@ -67,10 +67,11 @@ const Notes = () => {
     ];
     const boxcolors = [
         { name: 'White', value: 'white' },
-        { name: 'Blue', value: '#2563eb' },
-        { name: 'Red', value: '#dc2626' },
-        { name: 'Green', value: '#16a34a' },
-        { name: 'Yellow', value: '#eab308' },
+        { name: 'Blue', value: '#2563EB' },
+        { name: 'Red', value: '#DC2626' },
+        { name: 'Green', value: '#059669' },
+        { name: 'Yellow', value: '#F59E0B' },
+        { name: 'Black', value: 'black' },
     ];
 
 
