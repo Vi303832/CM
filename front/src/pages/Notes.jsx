@@ -176,19 +176,17 @@ const Notes = () => {
 
 
 
-
     const getNoteColorClass = (color) => {
         switch (color) {
-            case 'white': return 'bg-white ';
-            case '#2563eb': return 'bg-blue-600';
-            case '#dc2626': return 'bg-red-600';
-            case '#16a34a': return 'bg-[#059669]';
-            case '#eab308': return 'bg-[#F59E0B]';
+            case 'white': return 'bg-white';
+            case '#2563EB': return 'bg-[#2563EB]';
+            case '#DC2626': return 'bg-[#DC2626]';
+            case '#059669': return 'bg-[#059669]';
+            case '#F59E0B': return 'bg-[#F59E0B]';
             case 'black': return 'bg-black';
             default: return 'bg-white';
         }
     };
-
 
 
 
@@ -706,7 +704,7 @@ const Notes = () => {
                         </div>
                     </div>
                 ) : !notes || notes.length === 0 ? (
-                    <div className="h-full flex items-center justify-center">
+                    <div className="h-72 flex items-center  justify-center">
                         <div className="text-center">
                             <div className="flex justify-center mb-6">
                                 <FaStickyNote className="text-6xl text-blue-600" />
@@ -789,7 +787,7 @@ const Notes = () => {
                                         )}
 
                                         {/* Card content - main area with padding for footer */}
-                                        <div className={`flex flex-col h-full ${note.imgUrl ? 'p-4 pb-14' : 'p-5 pb-14'} ${note.color === "white" ? "text-gray-800" : note.color === "#eab308" ? "text-gray-900" : "text-white"}`}>
+                                        <div className={`flex flex-col h-full ${note.imgUrl ? 'p-4 pb-14' : 'p-5 pb-14'} ${note.color === "white" ? "text-gray-800" : note.color === "black" ? "text-white" : "text-gray-900"}`}>
                                             {/* Title and pin indicator */}
                                             <div className="flex justify-between items-start mb-2">
                                                 <h3 className="text-lg font-bold truncate max-w-[180px] group-hover:max-w-full transition-all duration-300">
@@ -822,12 +820,11 @@ const Notes = () => {
                                         </div>
 
                                         {/* Footer with date and tags - absolute positioning for hover effect */}
-                                        <div className={`px-4 py-3 rounded-b-lg absolute bottom-0 left-0 right-0 z-20 transform ${hoveredNoteId === note._id ? 'translate-y-0' : 'translate-y-full'} transition-transform duration-300 ease-in-out ${note.color === "white" ? "bg-gray-200 border-t border-gray-300" :
-                                            note.color === "#eab308" ? "bg-[#D97706] border-t border-[#FBBF24]" :
-                                                note.color === "#2563eb" ? "bg-[#1D4ED8] border-t border-[#3B82F6]" :
-                                                    note.color === "#dc2626" ? "bg-[#B91C1C] border-t border-[#EF4444]" :
-                                                        note.color === "#16a34a" ? "bg-[#047857] border-t border-[#10B981]" :
-
+                                        <div className={`px-4 py-3 rounded-b-lg absolute bottom-0 left-0 right-0 z-20 transform ${hoveredNoteId === note._id ? 'translate-y-0' : 'translate-y-full'} transition-transform duration-300 ease-in-out  ${note.color === "white" ? "bg-white border-t border-gray-300" :
+                                            note.color === "#F59E0B" ? "bg-[#D97706]  border-t border-[#FBBF24]" :
+                                                note.color === "#2563EB" ? "bg-[#1D4ED8]  border-t border-[#3B82F6]" :
+                                                    note.color === "#DC2626" ? "bg-[#B91C1C] border-t border-[#EF4444]" :
+                                                        note.color === "#059669" ? "bg-[#047857] border-t border-[#10B981]" :
                                                             note.color === "black" ? "bg-black/20 border-t border-white/10" : "bg-gray-100"}`}>
                                             {/* Created date */}
                                             <div className={`text-xs mb-2 flex items-center ${note.color === "white" ? "text-gray-500" :
