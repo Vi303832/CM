@@ -3,7 +3,8 @@ import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import { showToast } from '../utils/toast';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -29,29 +30,13 @@ const Login = () => {
             });
 
             localStorage.setItem('token', response.data.token);
-            toast.success("Successfully logged in!", {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+            showToast.success("Successfully logged in!");
             setTimeout(() => {
                 navigate('/');
             }, 1000);
         } catch (error) {
             console.error('Login error:', error);
-            toast.error(error.response?.data?.message || "Login failed!", {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+            showToast.error(error.response?.data?.message || "Login failed!");
         }
     };
 

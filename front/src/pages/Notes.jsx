@@ -4,6 +4,8 @@ import axios from 'axios';
 import { FaCalendar, FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight, FaPencilAlt, FaImage, FaThumbtack, FaMagic } from 'react-icons/fa';
 import { notesAPI } from '../api';
 import { useRef } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { showToast } from '../utils/toast';
 

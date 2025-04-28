@@ -5,13 +5,15 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { showToast } from '../utils/toast';
+
+
 
 const User = () => {
     const [user, setUser] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [activeSection, setActiveSection] = useState('profile');
     const [formData, setFormData] = useState({
-
         email: '',
         currentPassword: '',
         newPassword: '',
@@ -33,7 +35,6 @@ const User = () => {
                 const userData = await userAPI.getProfile();
                 setUser(userData);
                 setFormData({
-
                     email: userData.email,
                     currentPassword: '',
                     newPassword: '',
@@ -43,10 +44,7 @@ const User = () => {
                 setNotes(notesData);
             } catch (err) {
                 setError('Failed to fetch data');
-                toast.error("Failed to load profile data", {
-                    position: "top-right",
-                    autoClose: 3000
-                });
+                showToast.error("Failed to load profile data");
             }
         };
 
@@ -94,7 +92,6 @@ const User = () => {
             }
 
             const updateData = {
-
                 email: formData.email,
                 ...(formData.newPassword && {
                     currentPassword: formData.currentPassword,
@@ -105,18 +102,12 @@ const User = () => {
             const updatedUser = await userAPI.updateProfile(updateData);
             setUser(updatedUser);
             setSuccess('Profile updated successfully');
-            toast.success("Profile updated successfully!", {
-                position: "top-right",
-                autoClose: 3000
-            });
+            showToast.success("Profile updated successfully!");
             setIsEditing(false);
         } catch (err) {
             const errorMessage = err.response?.data?.message || err.message || 'Failed to update profile';
             setError(errorMessage);
-            toast.error(errorMessage, {
-                position: "top-right",
-                autoClose: 3000
-            });
+            showToast.error(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -125,18 +116,17 @@ const User = () => {
     const handleLogout = async () => {
         try {
             await authAPI.logout();
+            showToast.success("Successfully logged out!");
             localStorage.removeItem('token');
-            toast.success("Successfully logged out!", {
-                position: "top-right",
-                autoClose: 3000
-            });
-            navigate('/login');
+
+
+            setTimeout(() => {
+                navigate('/login');
+            }, 1000);
+
         } catch (err) {
             setError('Failed to logout');
-            toast.error("Failed to logout", {
-                position: "top-right",
-                autoClose: 3000
-            });
+            showToast.error("Failed to logout");
         }
     };
 
@@ -149,9 +139,12 @@ const User = () => {
     }
 
     return (
+
         <div className="min-h-screen flex flex-col bg-gray-50">
             <Navbar />
-            <ToastContainer />
+
+            <ToastContainer position="top-right" autoClose={3000} />
+
 
             <div className="flex flex-1 pt-16">
                 {/* Sidebar */}
@@ -442,7 +435,6 @@ const User = () => {
                                                     onClick={() => {
                                                         setIsEditing(false);
                                                         setFormData({
-
                                                             email: user.email,
                                                             currentPassword: '',
                                                             newPassword: '',

@@ -3,7 +3,8 @@ import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import { showToast } from '../utils/toast';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -54,35 +55,16 @@ const Register = () => {
         const passwordValidationError = validatePassword(formData.password);
         if (passwordValidationError) {
             setPasswordError(passwordValidationError);
-            toast.error(passwordValidationError, {
-                position: "top-right",
-                autoClose: 5000,
-            });
+            showToast.error(passwordValidationError);
             return;
         }
 
         try {
             const response = await axios.post('http://localhost:5000/api/auth/register', formData);
-            toast.success("Successfully registered!", {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+            showToast.success("Successfully registered!");
             navigate('/login');
         } catch (err) {
-            toast.error(err.response?.data?.message || "Registration failed!", {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+            showToast.error(err.response?.data?.message || "Registration failed!");
         }
     };
 
