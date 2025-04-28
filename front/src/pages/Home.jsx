@@ -24,10 +24,10 @@ const Home = () => {
         <div className="flex flex-col min-h-screen">
             <Navbar />
 
-            <main className=" bg-gradient-to-r from-blue-600 to-blue-800">
+            <main className="bg-gradient-to-r from-blue-600 to-blue-800 w-full overflow-hidden">
                 <section className="flex items-center py-16 max-lg:py-24 min-h-screen relative">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                        <div className=" flex max-lg:flex-col gap-8 items-center">
+                    <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+                        <div className="flex max-lg:flex-col gap-4 sm:gap-8 items-center w-full">
                             {/* Left Column - Text Content */}
                             <div className="text-white">
                                 <div className="flex items-center mb-4">
