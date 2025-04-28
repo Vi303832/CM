@@ -135,10 +135,15 @@ const Notes = () => {
 
     const clearCanvas = () => {
         const canvas = canvasRef.current;
+        if (!canvas) return; // canvas yoksa işlem yapma
+
         const context = canvas.getContext("2d");
+        if (!context) return; // context yoksa işlem yapma
+
         context.clearRect(0, 0, canvas.width, canvas.height);
         setDrawingData('');
     };
+
 
     // Use useEffect to initialize the canvas when modal opens
     useEffect(() => {

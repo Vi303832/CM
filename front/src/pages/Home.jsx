@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
 import {
+
     FaStickyNote,
     FaArrowRight,
     FaEdit,
@@ -260,28 +261,32 @@ const Home = () => {
             {/* Footer - Updated to match the image */}
             <footer className="bg-white py-12 px-4">
                 <div className="max-w-7xl mx-auto">
-                    <div className="grid md:grid-cols-3 gap-8">
+                    <div className="grid md:grid-cols-2 gap-8">
                         <div>
                             <div className="flex items-center mb-4">
                                 <div className="mr-2 bg-blue-600 rounded-md p-1">
-                                    <FaStickyNote className="text-white text-xl" />
+                                    <FaStickyNote className="text-white h-5 w-5" />
                                 </div>
                                 <span className="font-semibold text-xl">Notes</span>
                             </div>
                             <p className="text-gray-600 mb-4">
-                                A simple and powerful note-taking app to help you organize your thoughts, ideas, and important information.
+                                A simple and powerful note-taking app to help you organize your thoughts, ideas, and important
+                                information.
                             </p>
-                            <div className="flex space-x-4">
-                                <a href="#" className="text-gray-400 hover:text-gray-600">
-                                    <FaTwitter className="w-5 h-5" />
-                                </a>
-                                <a href="#" className="text-gray-400 hover:text-gray-600">
+                            <div className="flex space-x-4 mb-4">
+                                <a href="https://github.com/Vi303832"
+                                    target='_blank'
+                                    rel="noopener noreferrer"
+                                    className="text-gray-400 hover:text-gray-600 transition-colors">
                                     <FaGithub className="w-5 h-5" />
                                 </a>
-                                <a href="#" className="text-gray-400 hover:text-gray-600">
-                                    <FaInstagram className="w-5 h-5" />
-                                </a>
-                                <a href="#" className="text-gray-400 hover:text-gray-600">
+                                <a
+                                    href="https://www.linkedin.com/in/mehmetakiftanyeri-382458351"
+                                    target='_blank'
+                                    rel="noopener noreferrer"
+
+                                    className="text-gray-400 hover:text-gray-600 transition-colors">
+
                                     <FaLinkedin className="w-5 h-5" />
                                 </a>
                             </div>
@@ -289,23 +294,45 @@ const Home = () => {
 
                         <div>
                             <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
-                            <ul className="space-y-2">
-                                <li><a href="#" className="text-gray-600 hover:text-blue-600">Home</a></li>
-                                <li><a href="#" className="text-gray-600 hover:text-blue-600">Notes</a></li>
-                                <li><a href="#" className="text-gray-600 hover:text-blue-600">Profile</a></li>
-                                <li><a href="#" className="text-gray-600 hover:text-blue-600">Help & Support</a></li>
-                                <li><a href="#" className="text-gray-600 hover:text-blue-600">Privacy Policy</a></li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h3 className="font-semibold text-lg mb-4">Stay Updated</h3>
-                            <p className="text-gray-600 mb-4">Subscribe to our newsletter to get updates on new features and improvements.</p>
-                            <div className="flex">
-                                <input type="email" placeholder="Your email" className="px-4 py-2 w-full border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent" />
-                                <button className="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">
-                                    Subscribe
-                                </button>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <ul className="space-y-2">
+                                        <li>
+                                            <a onClick={() => navigate("notes")} className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+                                                Home
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a onClick={() => navigate("notes")} className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+                                                Notes
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a onClick={() => navigate("notes")} className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+                                                Profile
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <ul className="space-y-2">
+                                        <li>
+                                            <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
+                                                Help & Support
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
+                                                Privacy Policy
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
+                                                Terms of Service
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -313,9 +340,15 @@ const Home = () => {
                     <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
                         <p className="text-gray-500 text-sm">© 2025 Notes App. All rights reserved.</p>
                         <div className="flex space-x-6 mt-4 md:mt-0">
-                            <a href="#" className="text-gray-500 text-sm hover:text-gray-700">Terms of Service</a>
-                            <a href="#" className="text-gray-500 text-sm hover:text-gray-700">Privacy Policy</a>
-                            <a href="#" className="text-gray-500 text-sm hover:text-gray-700">Cookie Policy</a>
+                            <a href="#" className="text-gray-500 text-sm hover:text-gray-700 transition-colors">
+                                Terms of Service
+                            </a>
+                            <a href="#" className="text-gray-500 text-sm hover:text-gray-700 transition-colors">
+                                Privacy Policy
+                            </a>
+                            <a href="#" className="text-gray-500 text-sm hover:text-gray-700 transition-colors">
+                                Cookie Policy
+                            </a>
                         </div>
                     </div>
                 </div>
