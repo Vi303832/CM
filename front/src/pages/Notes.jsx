@@ -3,11 +3,9 @@ import Navbar from '../components/Navbar';
 import axios from 'axios';
 import { FaCalendar, FaStickyNote, FaPlus, FaTimes, FaTrash, FaEdit, FaTag, FaSearch, FaSort, FaFilter, FaChevronLeft, FaChevronRight, FaPencilAlt, FaImage, FaThumbtack, FaMagic } from 'react-icons/fa';
 import { notesAPI } from '../api';
-
-
-import { ToastContainer, toast } from 'react-toastify';
 import { useRef } from 'react';
-import 'react-toastify/dist/ReactToastify.css';
+
+import { showToast } from '../utils/toast';
 
 const Notes = () => {
 
@@ -183,7 +181,7 @@ const Notes = () => {
             case '#DC2626': return 'bg-[#DC2626]';
             case '#059669': return 'bg-[#059669]';
             case '#F59E0B': return 'bg-[#F59E0B]';
-            case 'black': return 'bg-black';
+            case 'black': return 'bg-black/90';
             default: return 'bg-white';
         }
     };
@@ -208,7 +206,7 @@ const Notes = () => {
                 setError('Failed to fetch notes');
 
                 if (notes.length === 0) {
-                    toast.error('Failed to fetch notes');
+                    showToast.error('Failed to fetch notes');
                 }
                 setNotes([]);
             } finally {
@@ -223,7 +221,7 @@ const Notes = () => {
         if (tags.length < 6) {
             setTags([...tags, '']);
         } else {
-            toast.warning('Maximum 6 tags allowed');
+            showToast.warning('Maximum 6 tags allowed');
         }
     };
 
@@ -273,7 +271,7 @@ const Notes = () => {
         if (value.length <= 50) {
             setTitle(value);
         } else {
-            toast.warning('Title cannot exceed 50 characters');
+            showToast.warning('Title cannot exceed 50 characters');
         }
     };
 
@@ -324,7 +322,7 @@ const Notes = () => {
     const handleSummarize = async () => {
         try {
             if (!displayNote.content) {
-                toast.error('No content to summarize');
+                showToast.error('No content to summarize');
                 return;
             }
 
@@ -356,7 +354,7 @@ const Notes = () => {
 
             if (summaryText) {
                 setSummary(summaryText);
-                toast.success('Summary generated successfully');
+                showToast.success('Summary generated successfully');
                 console.log(summary)
             } else {
                 console.error('Unexpected API response structure:', result);
@@ -370,7 +368,7 @@ const Notes = () => {
                 error.message ||
                 'Failed to generate summary';
 
-            toast.error(`Summarization error: ${errorMessage}`);
+            showToast.error(`Summarization error: ${errorMessage}`);
             setSummary(`Error: ${errorMessage}`);
         }
     };
@@ -408,11 +406,11 @@ const Notes = () => {
                 setNotes(prevNotes => prevNotes.map(note =>
                     note._id === editingNote._id ? updatedNote : note
                 ));
-                toast.success('Note updated successfully');
+                showToast.success('Note updated successfully');
             } else {
                 updatedNote = await notesAPI.createNote(noteData);
                 setNotes(prevNotes => [...prevNotes, updatedNote]);
-                toast.success('Note created successfully');
+                showToast.success('Note created successfully');
             }
 
             // Reset form
@@ -427,7 +425,7 @@ const Notes = () => {
 
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Failed to save note';
-            toast.error(errorMessage);
+            showToast.error(errorMessage);
             setError(errorMessage);
         } finally {
             setIsLoading(false);
@@ -439,9 +437,9 @@ const Notes = () => {
         try {
             await notesAPI.deleteNote(id);
             setNotes(prevNotes => prevNotes.filter(note => note._id !== id));
-            toast.success('Note deleted successfully');
+            showToast.success('Note deleted successfully');
         } catch (err) {
-            toast.error('Failed to delete note');
+            showToast.error('Failed to delete note');
             setError('Failed to delete note');
         }
     };
@@ -459,7 +457,7 @@ const Notes = () => {
         setPreviewUrl('');
         if (editingNote?.imgUrl) {
             // If removing an existing image
-            toast.info('Image will be removed when you save the note');
+            showToast.info('Image will be removed when you save the note');
         }
     };
 
@@ -483,7 +481,7 @@ const Notes = () => {
             return response.data.url; // Cloudinary'den gelen URL
         } catch (error) {
             console.error('Image upload error:', error);
-            toast.error('Image upload failed');
+            showToast.error('Image upload failed');
             return null;
         } finally {
             setUploadLoading(false);
@@ -497,9 +495,9 @@ const Notes = () => {
             setNotes(prevNotes => prevNotes.map(note =>
                 note._id === id ? updatedNote : note
             ));
-            toast.success(`Note ${pinnedStatus ? 'pinned' : 'unpinned'}`);
+            showToast.success(`Note ${pinnedStatus ? 'pinned' : 'unpinned'}`);
         } catch (err) {
-            toast.error('Failed to update pin status');
+            showToast.error('Failed to update pin status');
         }
     };
 
@@ -524,11 +522,11 @@ const Notes = () => {
                 setNotes(prevNotes => prevNotes.map(note =>
                     note._id === editingNote._id ? updatedNote : note
                 ));
-                toast.success('Drawing note updated successfully');
+                showToast.success('Drawing note updated successfully');
             } else {
                 const newNote = await notesAPI.createNote(noteData);
                 setNotes(prevNotes => [...prevNotes, newNote]);
-                toast.success('Drawing note created successfully');
+                showToast.success('Drawing note created successfully');
             }
 
             // Reset form
@@ -540,7 +538,7 @@ const Notes = () => {
 
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Failed to save drawing note';
-            toast.error(errorMessage);
+            showToast.error(errorMessage);
             setError(errorMessage);
         } finally {
             setIsLoading(false);
@@ -601,7 +599,6 @@ const Notes = () => {
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
             <Navbar />
-            <ToastContainer position="top-right" autoClose={3000} />
 
             <main className="flex-grow pt-24 p-6">
                 {/* Search and Filter Bar */}
@@ -820,12 +817,12 @@ const Notes = () => {
                                         </div>
 
                                         {/* Footer with date and tags - absolute positioning for hover effect */}
-                                        <div className={`px-4 py-3 rounded-b-lg absolute bottom-0 left-0 right-0 z-20 transform ${hoveredNoteId === note._id ? 'translate-y-0' : 'translate-y-full'} transition-transform duration-300 ease-in-out  ${note.color === "white" ? "bg-white border-t border-gray-300" :
+                                        <div className={`px-4 py-3 rounded-b-lg absolute bottom-0 left-0 right-0 z-20 transform ${hoveredNoteId === note._id ? 'translate-y-0' : 'translate-y-full'} transition-transform duration-300 ease-in-out  ${note.color === "white" ? "bg-gray-200 border-t border-gray-300" :
                                             note.color === "#F59E0B" ? "bg-[#D97706]  border-t border-[#FBBF24]" :
                                                 note.color === "#2563EB" ? "bg-[#1D4ED8]  border-t border-[#3B82F6]" :
                                                     note.color === "#DC2626" ? "bg-[#B91C1C] border-t border-[#EF4444]" :
                                                         note.color === "#059669" ? "bg-[#047857] border-t border-[#10B981]" :
-                                                            note.color === "black" ? "bg-black/20 border-t border-white/10" : "bg-gray-100"}`}>
+                                                            note.color === "black" ? "bg-black border-t border-white/10" : "bg-gray-100"}`}>
                                             {/* Created date */}
                                             <div className={`text-xs mb-2 flex items-center ${note.color === "white" ? "text-gray-500" :
                                                 note.color === "#eab308" ? "text-gray-800" : "text-white/80"}`}>

@@ -72,7 +72,7 @@ const Register = () => {
                 draggable: true,
                 progress: undefined,
             });
-            navigate('/notes');
+            navigate('/login');
         } catch (err) {
             toast.error(err.response?.data?.message || "Registration failed!", {
                 position: "top-right",
