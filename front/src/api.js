@@ -74,15 +74,34 @@ export const notesAPI = {
         const response = await api.delete(`/notes/${id}`);
         return response.data;
     },
+    // Get current summary usage information
+    getSummaryUsage: async () => {
+        try {
+            const response = await api.get('/summary/usage');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching summary usage:', error);
+            throw error;
+        }
+    },
+    // Summarize note and decrement usage in one call
     summarizeNote: async (text) => {
+
         try {
 
-            const response = await api.post('/summarize', { text }); // api kullanılmalı
-            return response.data.summary;
+
+            const response = await api.post('/summary', { text });
+
+
+
+            return {
+                summary: response.data.summary,
+                remaining: response.data.remaining,
+                nextReset: response.data.nextReset
+            };
         } catch (error) {
             console.error('Summarization error:', error);
             throw error;
         }
-    },
-
+    }
 };

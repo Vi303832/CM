@@ -17,10 +17,14 @@ const Notes = () => {
 
 
 
-
-    const [isSummarizing, setIsSummarizing] = useState(false);
     const [summary, setSummary] = useState('');
-    const [showSummary, setShowSummary] = useState(true);
+    const [isSummarizing, setIsSummarizing] = useState(false);
+    const [showSummary, setShowSummary] = useState(false);
+
+    const [summaryUsage, setSummaryUsage] = useState({
+        count: 0,
+        nextReset: ''
+    });
 
     {/*Ai (DANGEROUS, TOXİC, MALİCİOUS)*/ }
 
@@ -322,9 +326,42 @@ const Notes = () => {
 
 
 
+
+
+
     {/*Aİ Aİ Aİ Aİ */ }
 
+    const summaryRef = useRef(null);
 
+    useEffect(() => {
+        if (showSummary && summaryRef.current) {
+            summaryRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [showSummary]);
+
+
+    useEffect(() => {
+        const fetchSummaryUsage = async () => {
+            try {
+                const usage = await notesAPI.getSummaryUsage();
+                console.log(usage.remaining); // Correct property name
+
+                setSummaryUsage({
+                    count: usage.remaining, // Fixed typo here (remaning → remaining)
+                    nextReset: usage.nextReset
+                });
+
+                console.log(summaryUsage.nextReset)
+                // This will still show the old value because state updates are async
+                // console.log(summaryUsage.count);
+
+            } catch (error) {
+                console.error('Failed to fetch summary usage:', error);
+            }
+        };
+
+        fetchSummaryUsage();
+    }, []);
 
     const handleSummarize = async () => {
         try {
@@ -333,52 +370,51 @@ const Notes = () => {
                 return;
             }
 
+            // Check if user has any remaining usages
+            if (summaryUsage.count <= 0) {
+                showToast.error(`You've reached your weekly summary limit. Limit resets on ${summaryUsage.nextReset}`);
+                return;
+            }
+
+            setIsSummarizing(true);
+            setShowSummary(false);
+
             const result = await notesAPI.summarizeNote(displayNote.content);
 
-            // Handle various response formats
-            let summaryText = '';
+            // Update the summary and usage information
+            setSummary(result.summary);
+            setSummaryUsage({
+                count: result.remaining,
+                nextReset: result.nextReset
+            });
 
-            // Case 1: Direct text response (string)
-            if (typeof result === 'string') {
-                summaryText = result;
-            }
-            // Case 2: Hugging Face standard format (array with summary_text)
-            else if (Array.isArray(result) && result[0]?.summary_text) {
-                summaryText = result[0].summary_text;
-            }
-            // Case 3: Your expected format { data: { summary: text } }
-            else if (result?.data?.summary) {
-                summaryText = result.data.summary;
-            }
-            // Case 4: Alternative format { summary_text: text }
-            else if (result?.summary_text) {
-                summaryText = result.summary_text;
-            }
-            // Case 5: Raw response from API (no parsing needed)
-            else {
-                summaryText = result;
-            }
-
-            if (summaryText) {
-                setSummary(summaryText);
-                showToast.success('Summary generated successfully');
-                console.log(summary)
-            } else {
-                console.error('Unexpected API response structure:', result);
-                throw new Error('Received empty or invalid summary');
-            }
+            setShowSummary(true);
+            showToast.success(`Summary generated! You have ${result.remaining} summaries left this week.`);
         } catch (error) {
             console.error('Summarization failed:', error);
 
-            // Provide more detailed error messages
+            // Handle limit reached error
+            if (error.response?.status === 403) {
+                showToast.error(`${error.response.data.message}. Limit resets on ${error.response.data.nextReset}`);
+                return;
+            }
+
+            // Handle other errors
             const errorMessage = error.response?.data?.error ||
+                error.response?.data?.message ||
                 error.message ||
                 'Failed to generate summary';
 
             showToast.error(`Summarization error: ${errorMessage}`);
-            setSummary(`Error: ${errorMessage}`);
+        } finally {
+            setIsSummarizing(false);
         }
     };
+
+
+
+
+
 
     {/*Aİ Aİ Aİ Aİ */ }
 
@@ -996,22 +1032,11 @@ const Notes = () => {
 
                                 {/* AI Summary if exists - improved styling */}
                                 {showSummary && summary && (
-                                    <div className="px-8 pt-6">
-                                        <div className="bg-purple-50 rounded-lg p-5 border-l-4 border-purple-500 mb-6 shadow-sm">
-                                            <div className="flex justify-between items-center mb-3">
-                                                <h4 className="font-semibold text-purple-800 flex items-center">
-                                                    <FaMagic className="mr-2 h-4 w-4" />
-                                                    AI Summary
-                                                </h4>
-                                                <button
-                                                    onClick={() => setShowSummary(false)}
-                                                    className="text-purple-600 hover:text-purple-800 cursor-pointer"
-                                                >
-                                                    <FaTimes />
-                                                </button>
-                                            </div>
-                                            <p className="text-gray-700 leading-relaxed">{summary}</p>
-                                        </div>
+                                    <div
+                                        ref={summaryRef}
+                                        className="mt-4 p-4 bg-purple-50 rounded-md border border-purple-200">
+                                        <h3 className="font-medium text-purple-800 mb-2">AI Summary</h3>
+                                        <p className="text-gray-800">{summary}</p>
                                     </div>
                                 )}
 
@@ -1041,23 +1066,46 @@ const Notes = () => {
                             </div>
 
                             {/* Footer with action button - improved border and spacing */}
-                            <div className="p-6 border-t border-gray-300 flex justify-end bg-gray-50">
+                            <div className="p-4 border-t border-gray-200 flex justify-between items-center bg-gray-50 shadow-inner">
+                                <div className="flex items-center">
+                                    <div className="text-sm font-medium text-gray-700 flex items-center">
+                                        <svg className="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                        <span>AI Summary: </span>
+                                        <span className="ml-1 font-bold">{summaryUsage.count}/5</span>
+                                        <span className="ml-1">remaining this week</span>
+                                        {summaryUsage.count <= 1 && (
+                                            <span className="ml-2 text-orange-500 flex items-center">
+                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Resets on {summaryUsage.nextReset}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
                                 <button
                                     onClick={handleSummarize}
-                                    disabled={isSummarizing}
-                                    className="px-5 py-2.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 cursor-pointer transition-colors flex items-center gap-2 shadow-sm"
+                                    disabled={isSummarizing || summaryUsage.count <= 0}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center cursor-pointer ${isSummarizing
+                                        ? 'bg-blue-300 text-white cursor-wait'
+                                        : summaryUsage.count <= 0
+                                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                                        }`}
                                 >
-                                    {isSummarizing ? (
-                                        <>
-                                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                                            Summarizing...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <FaMagic className="w-4 h-4 " />
-                                            Summarize with AI
-                                        </>
+                                    {isSummarizing && (
+                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
                                     )}
+                                    {isSummarizing
+                                        ? 'Summarizing...'
+                                        : summaryUsage.count <= 0
+                                            ? `Limit reached (resets on ${summaryUsage.nextReset})`
+                                            : 'Summarize with AI'}
                                 </button>
                             </div>
                         </div>

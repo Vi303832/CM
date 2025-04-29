@@ -4,30 +4,27 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { register, login, logout } from './controllers/authController.js';
 import { createNote, getNotes, updateNote, deleteNote } from './controllers/noteController.js';
+import { getSummaryUsage, decrementSummaryUsage } from './controllers/summaryController.js';
 import profileRoutes from './routes/profileRoutes.js';
 import { protect } from './middleware/authMiddleware.js';
 import multer from 'multer';
+
 import fs from 'fs';
 import axios from 'axios';
-
 
 import cloudinary from './utils/cloudinary.js';
 import upload from './middleware/upload.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-
+import User from './models/User.js';
 dotenv.config();
 
 const app = express();
 
 // Middleware
-
-// In server.js
 app.use(cors({
     origin: 'http://localhost:5173', // Your frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -53,7 +50,138 @@ app.use('/api/profile', profileRoutes);
 // Note Routes
 app.get('/api/notes', protect, getNotes);
 app.post('/api/notes', protect, createNote);
+app.put('/api/notes/:id', protect, updateNote);
+app.delete('/api/notes/:id', protect, deleteNote);
 
+
+
+
+
+
+
+
+
+
+
+
+app.get('/api/summary/usage', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const now = new Date();
+
+        const nextMonday = getNextMonday();
+
+
+
+        // Initialize summaryUsage if it doesn't exist
+        if (!user.summaryUsage) {
+            user.summaryUsage = {
+                count: 5,
+
+                nextReset: nextMonday,
+
+            };
+        }
+
+        // Check if reset is needed
+
+        if (now >= nextMonday) {
+            user.summaryUsage = {
+                count: 5,
+                nextReset: nextMonday,
+            };
+            await user.save();
+        }
+
+        res.json({
+            remaining: user.summaryUsage.count,
+            limit: 5,
+            nextReset: nextMonday,
+        });
+
+    } catch (error) {
+        console.error('Get summary usage error:', error);
+        res.status(500).json({
+            message: 'Server error',
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/summary', protect, async (req, res) => {
+    try {
+
+        const { text } = req.body;
+
+        if (!text) {
+            return res.status(400).json({ error: 'Text is required' });
+        }
+
+        // 1. Get user from protection middleware
+        const user = req.user;
+
+        console.log(user.summaryUsage)
+        // 2. Check and reset usage if needed
+        const now = new Date();
+        if (!user.summaryUsage || now > new Date(user.summaryUsage.nextReset)) {
+            user.summaryUsage = {
+                count: 5, // Weekly limit
+                nextReset: getNextMonday()
+            };
+        }
+
+        // 3. Check remaining summaries
+        if (user.summaryUsage.count <= 0) {
+            return res.status(403).json({
+                error: 'Weekly limit reached',
+                nextReset: user.summaryUsage.nextReset
+            });
+        }
+
+        // 4. Call Hugging Face API
+        const response = await axios.post(
+            'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
+            { inputs: text },
+            { headers: { Authorization: `Bearer ${process.env.HUGGING_FACE_API_KEY}` } }
+        );
+
+        const summary = response.data?.summary_text || response.data[0]?.summary_text;
+        if (!summary) throw new Error('Invalid response from API');
+
+        // 5. Update usage
+        user.summaryUsage.count -= 1;
+        await user.save();
+
+        // 6. Send response
+        res.json({
+            summary,
+            remaining: user.summaryUsage.count,
+            nextReset: user.summaryUsage.nextReset
+        });
+
+    } catch (error) {
+        console.error('Summary error:', error);
+        res.status(500).json({ error: 'Failed to generate summary', details: error.message });
+    }
+});
+
+function getNextMonday() {
+    const date = new Date();
+    date.setDate(date.getDate() + ((1 + 7 - date.getDay()) % 7));
+    date.setHours(0, 0, 0, 0);
+
+    // Extract month and day, pad with leading zeros if needed
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${month}-${day}`; // Format: "MM-DD"
+}
+
+// File Upload Route
 app.post('/api/upload', upload.single('image'), async (req, res) => {
     try {
         console.log('Dosya alındı:', req.file);
@@ -73,7 +201,6 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
             console.warn("Dosya silinemedi:", e.message);
         }
 
-
         res.json({ url: result.secure_url });
     } catch (error) {
         console.error('Yükleme hatası:', error);
@@ -92,59 +219,5 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 
 
 
-
-{/*AI*/ }
-const apiKey = process.env.HUGGING_FACE_API_KEY;
-
-app.post('/api/summarize', express.json(), async (req, res) => {
-    try {
-        const { text } = req.body;
-
-        if (!text) {
-            return res.status(400).json({ error: 'Text is required' });
-        }
-
-        const response = await axios.post(
-            'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
-            { inputs: text },
-            {
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-        const summary = Array.isArray(response.data)
-            ? response.data[0]?.summary_text
-            : response.data?.summary_text;
-
-        if (!summary) {
-            throw new Error('Invalid response from Hugging Face');
-        }
-
-        res.json({ summary });
-
-    } catch (error) {
-        console.error('Summarization error:', error);
-
-        // Handle Hugging Face specific errors
-        if (error.response?.data?.error) {
-            return res.status(502).json({
-                error: 'Summarization service error',
-                details: error.response.data.error
-            });
-        }
-
-        res.status(500).json({
-            error: 'Failed to generate summary',
-            details: error.message
-        });
-    }
-});
-
-app.put('/api/notes/:id', protect, updateNote);
-
-app.delete('/api/notes/:id', protect, deleteNote);
-
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); 
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -29,11 +29,15 @@ const User = () => {
     });
     const navigate = useNavigate();
 
+
+
+
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const userData = await userAPI.getProfile();
-                setUser(userData);
+                setUser(userData)
                 setFormData({
                     email: userData.email,
                     currentPassword: '',
