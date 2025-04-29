@@ -99,7 +99,7 @@ const apiKey = process.env.HUGGING_FACE_API_KEY;
 app.post('/api/summarize', express.json(), async (req, res) => {
     try {
         const { text } = req.body;
-        console.log("bura")
+
         if (!text) {
             return res.status(400).json({ error: 'Text is required' });
         }
