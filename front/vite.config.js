@@ -6,13 +6,4 @@ export default defineConfig({
   plugins: [react(),
   tailwindcss(),
   ],
-  build: {
-    outDir: 'dist',
-    sourcemap: false,
-    minify: true,
-  },
-  server: {
-    port: 3000,
-    host: true
-  }
 })
