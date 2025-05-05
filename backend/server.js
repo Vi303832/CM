@@ -26,7 +26,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: "https://cm-frontend.vercel.app",
+    origin: "https://zynote.vercel.app/",
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
