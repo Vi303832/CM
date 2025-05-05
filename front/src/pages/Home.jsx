@@ -37,7 +37,7 @@ const Home = () => {
                                     </div>
                                     <span>Organize your thoughts</span>
                                 </div>
-                                <h1 className="text-5xl font-bold mb-4">Welcome to Notes</h1>
+                                <h1 className="text-5xl font-bold mb-4">Welcome to Zynote</h1>
                                 <p className="text-lg mb-6">
                                     Create, organize, and manage your notes easily. The perfect
                                     place to store your thoughts, ideas, and important
@@ -67,7 +67,7 @@ const Home = () => {
                                             <div className="h-3 w-3 rounded-full bg-red-500"></div>
                                             <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
                                             <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                                            <div className="ml-2 text-xs text-gray-500">Notes App</div>
+                                            <div className="ml-2 text-xs text-gray-500">Zynote</div>
                                         </div>
                                         <div className="bg-white p-6">
                                             <div className="flex justify-between items-center mb-4">
@@ -240,7 +240,7 @@ const Home = () => {
             <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16 px-4">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-3xl font-bold mb-4">Ready to organize your thoughts?</h2>
-                    <p className="mb-8">Start using Notes today and experience the difference. It's completely free!</p>
+                    <p className="mb-8">Start using Zynote today and experience the difference. It's completely free!</p>
                     <div className="flex flex-wrap justify-center gap-4">
                         <button
                             onClick={() => navigate('/notes')}
@@ -267,7 +267,7 @@ const Home = () => {
                                 <div className="mr-2 bg-blue-600 rounded-md p-1">
                                     <FaStickyNote className="text-white h-5 w-5" />
                                 </div>
-                                <span className="font-semibold text-xl">Notes</span>
+                                <span className="font-semibold text-xl">Zynote</span>
                             </div>
                             <p className="text-gray-600 mb-4">
                                 A simple and powerful note-taking app to help you organize your thoughts, ideas, and important

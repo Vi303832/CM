@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaCog, FaLock, FaEnvelope, FaUserEdit, FaCalendarAlt, FaStickyNote, FaAt } from 'react-icons/fa';
+import { FaUser, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaCog, FaLock, FaEnvelope, FaUserEdit, FaCalendarAlt, FaStickyNote, FaAt, FaBars } from 'react-icons/fa';
 import { authAPI, userAPI, notesAPI } from '../api';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { showToast } from '../utils/toast';
-
-
 
 const User = () => {
     const [user, setUser] = useState(null);
@@ -27,11 +25,8 @@ const User = () => {
         length: false,
         match: false
     });
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const navigate = useNavigate();
-
-
-
-
 
     useEffect(() => {
         const fetchData = async () => {
@@ -54,6 +49,18 @@ const User = () => {
 
         fetchData();
     }, []);
+
+    // Close sidebar on window resize if it's open
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 768 && sidebarOpen) {
+                setSidebarOpen(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [sidebarOpen]);
 
     // Validate password as user types
     useEffect(() => {
@@ -123,7 +130,6 @@ const User = () => {
             showToast.success("Successfully logged out!");
             localStorage.removeItem('token');
 
-
             setTimeout(() => {
                 navigate('/login');
             }, 1000);
@@ -131,6 +137,18 @@ const User = () => {
         } catch (err) {
             setError('Failed to logout');
             showToast.error("Failed to logout");
+        }
+    };
+
+    const toggleSidebar = () => {
+        setSidebarOpen(!sidebarOpen);
+    };
+
+    const handleSectionChange = (section) => {
+        setActiveSection(section);
+        // Close sidebar on mobile when changing sections
+        if (window.innerWidth < 768) {
+            setSidebarOpen(false);
         }
     };
 
@@ -143,16 +161,35 @@ const User = () => {
     }
 
     return (
-
         <div className="min-h-screen flex flex-col bg-gray-50">
             <Navbar />
 
             <ToastContainer position="top-right" autoClose={3000} />
 
+            <div className="flex flex-1 pt-16 relative">
+                {/* Mobile Sidebar Toggle */}
+                <div className="md:hidden fixed bottom-6 right-6 z-30">
+                    <button
+                        onClick={toggleSidebar}
+                        className="bg-blue-600 text-white p-3 rounded-full shadow-lg flex items-center justify-center"
+                    >
+                        <FaBars className="text-xl" />
+                    </button>
+                </div>
 
-            <div className="flex flex-1 pt-16">
-                {/* Sidebar */}
-                <div className="w-72 bg-white shadow-lg border-r border-gray-200">
+                {/* Sidebar - Hidden on mobile by default */}
+                <div className={`${sidebarOpen
+                    ? 'fixed inset-0 z-20 bg-gray-900 opacity-20 transition-opacity duration-300'
+                    : 'hidden'
+                    } md:hidden`}
+                    onClick={toggleSidebar}
+                />
+
+                <div className={`
+                    fixed top-0 left-0 z-20 h-full w-64 bg-white shadow-lg border-r border-gray-200 transform transition-transform duration-300 ease-in-out pt-16
+                    ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+                    md:relative md:translate-x-0 md:w-72 md:block md:z-0 md:pt-0
+                `}>
                     <div className="p-6 border-b border-gray-200">
                         <div className="flex items-center space-x-4">
                             <div className="bg-blue-100 p-3 rounded-full shadow-sm">
@@ -167,7 +204,7 @@ const User = () => {
 
                     <nav className="p-4 space-y-2">
                         <button
-                            onClick={() => setActiveSection('profile')}
+                            onClick={() => handleSectionChange('profile')}
                             className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 cursor-pointer ${activeSection === 'profile'
                                 ? 'bg-blue-50 text-blue-600 shadow-sm'
                                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -178,7 +215,7 @@ const User = () => {
                         </button>
 
                         <button
-                            onClick={() => setActiveSection('security')}
+                            onClick={() => handleSectionChange('security')}
                             className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 cursor-pointer ${activeSection === 'security'
                                 ? 'bg-blue-50 text-blue-600 shadow-sm'
                                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -201,19 +238,19 @@ const User = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 p-8 bg-gray-50">
+                <div className="flex-1 p-4 md:p-8 bg-gray-50 pb-16">
                     {activeSection === 'profile' ? (
                         <div className="max-w-4xl mx-auto">
                             {/* Profile Header */}
-                            <div className="bg-white rounded-lg shadow p-8 mb-8">
-                                <div className="flex items-center space-x-6">
-                                    <div className="bg-blue-100 p-4 rounded-full shadow-sm">
+                            <div className="bg-white rounded-lg shadow p-4 md:p-8 mb-6 md:mb-8">
+                                <div className="flex flex-col md:flex-row md:items-center md:space-x-6">
+                                    <div className="bg-blue-100 p-4 rounded-full shadow-sm mx-auto md:mx-0 mb-4 md:mb-0">
                                         <FaUser className="text-blue-600 text-4xl" />
                                     </div>
-                                    <div>
-                                        <h1 className="text-3xl font-bold text-gray-800">{user.name || user.username}</h1>
+                                    <div className="text-center md:text-left">
+                                        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">{user.name || user.username}</h1>
                                         <p className="text-gray-500 mt-1">@{user.username}</p>
-                                        <div className="flex items-center mt-2 text-gray-500">
+                                        <div className="flex items-center justify-center md:justify-start mt-2 text-gray-500">
                                             <FaCalendarAlt className="mr-2" />
                                             <span>Member since {new Date(user.createdAt).toLocaleDateString()}</span>
                                         </div>
@@ -222,46 +259,46 @@ const User = () => {
                             </div>
 
                             {/* Stats Section */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                <div className="bg-white rounded-lg shadow p-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+                                <div className="bg-white rounded-lg shadow p-4 md:p-6">
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <h3 className="text-lg font-semibold text-gray-800">Total Notes</h3>
-                                            <p className="text-3xl font-bold text-blue-600 mt-2">{notes.length}</p>
+                                            <p className="text-2xl md:text-3xl font-bold text-blue-600 mt-2">{notes.length}</p>
                                         </div>
                                         <div className="bg-blue-100 p-3 rounded-full">
-                                            <FaStickyNote className="text-blue-600 text-2xl" />
+                                            <FaStickyNote className="text-blue-600 text-xl md:text-2xl" />
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-white rounded-lg shadow p-6">
+                                <div className="bg-white rounded-lg shadow p-4 md:p-6">
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <h3 className="text-lg font-semibold text-gray-800">Recent Activity</h3>
-                                            <p className="text-3xl font-bold text-green-600 mt-2">
+                                            <p className="text-2xl md:text-3xl font-bold text-green-600 mt-2">
                                                 {notes.length > 0 ? new Date(Math.max(...notes.map(note => new Date(note.updatedAt || note.createdAt)))).toLocaleDateString() : 'None'}
                                             </p>
                                         </div>
                                         <div className="bg-green-100 p-3 rounded-full">
-                                            <FaCalendarAlt className="text-green-600 text-2xl" />
+                                            <FaCalendarAlt className="text-green-600 text-xl md:text-2xl" />
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-white rounded-lg shadow p-6">
+                                <div className="bg-white rounded-lg shadow p-4 md:p-6 sm:col-span-2 md:col-span-1">
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <h3 className="text-lg font-semibold text-gray-800">Account Status</h3>
-                                            <p className="text-3xl font-bold text-purple-600 mt-2">Active</p>
+                                            <p className="text-2xl md:text-3xl font-bold text-purple-600 mt-2">Active</p>
                                         </div>
                                         <div className="bg-purple-100 p-3 rounded-full">
-                                            <FaUser className="text-purple-600 text-2xl" />
+                                            <FaUser className="text-purple-600 text-xl md:text-2xl" />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Recent Notes */}
-                            <div className="bg-white rounded-lg shadow p-6">
+                            <div className="bg-white rounded-lg shadow p-4 md:p-6">
                                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Notes</h2>
                                 {notes.length > 0 ? (
                                     <div className="space-y-4">
@@ -311,9 +348,9 @@ const User = () => {
                                 </div>
                             )}
 
-                            <div className="bg-white rounded-lg shadow p-8">
-                                <div className="flex justify-between items-center mb-8">
-                                    <h2 className="text-2xl font-semibold text-gray-800">
+                            <div className="bg-white rounded-lg shadow p-4 md:p-8">
+                                <div className="flex justify-between items-center mb-6 md:mb-8">
+                                    <h2 className="text-xl md:text-2xl font-semibold text-gray-800">
                                         Profile Settings
                                     </h2>
                                     {!isEditing && (
@@ -322,15 +359,13 @@ const User = () => {
                                             className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 cursor-pointer transition-colors duration-200"
                                         >
                                             <FaEdit />
-                                            <span className="font-medium">Edit Profile</span>
+                                            <span className="font-medium hidden sm:inline">Edit Profile</span>
                                         </button>
                                     )}
                                 </div>
 
                                 <form onSubmit={handleSubmit}>
                                     <div className="space-y-6">
-
-
                                         {/* Email Field */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -344,7 +379,7 @@ const User = () => {
                                                     value={formData.email}
                                                     onChange={handleInputChange}
                                                     disabled={!isEditing}
-                                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-colors duration-200"
+                                                    className="w-full px-3 md:px-4 py-2 md:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-colors duration-200"
                                                 />
                                             </div>
                                         </div>
@@ -360,7 +395,7 @@ const User = () => {
                                                     type="text"
                                                     value={user.username}
                                                     disabled
-                                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100"
+                                                    className="w-full px-3 md:px-4 py-2 md:py-2.5 border border-gray-300 rounded-lg bg-gray-100"
                                                 />
                                             </div>
                                             <p className="text-sm text-gray-500 mt-1">Username cannot be changed</p>
@@ -382,7 +417,7 @@ const User = () => {
                                                                 name="currentPassword"
                                                                 value={formData.currentPassword}
                                                                 onChange={handleInputChange}
-                                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                                                                className="w-full px-3 md:px-4 py-2 md:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                                                             />
                                                         </div>
                                                         {formData.newPassword && !formData.currentPassword && (
@@ -401,7 +436,7 @@ const User = () => {
                                                                 name="newPassword"
                                                                 value={formData.newPassword}
                                                                 onChange={handleInputChange}
-                                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                                                                className="w-full px-3 md:px-4 py-2 md:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                                                             />
                                                         </div>
                                                         {passwordErrors.length && formData.newPassword && (
@@ -420,7 +455,7 @@ const User = () => {
                                                                 name="confirmPassword"
                                                                 value={formData.confirmPassword}
                                                                 onChange={handleInputChange}
-                                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                                                                className="w-full px-3 md:px-4 py-2 md:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                                                             />
                                                         </div>
                                                         {passwordErrors.match && formData.confirmPassword && (
@@ -433,7 +468,7 @@ const User = () => {
 
                                         {/* Action Buttons */}
                                         {isEditing && (
-                                            <div className="flex justify-end space-x-4 pt-6">
+                                            <div className="flex justify-end space-x-3 md:space-x-4 pt-6">
                                                 <button
                                                     type="button"
                                                     onClick={() => {
@@ -447,14 +482,14 @@ const User = () => {
                                                         setPasswordErrors({ length: false, match: false });
                                                         setError(null);
                                                     }}
-                                                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                                                    className="px-3 md:px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors duration-200 text-sm md:text-base"
                                                 >
                                                     Cancel
                                                 </button>
                                                 <button
                                                     type="submit"
                                                     disabled={isLoading || (formData.newPassword && (passwordErrors.length || passwordErrors.match))}
-                                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer transition-colors duration-200"
+                                                    className="px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer transition-colors duration-200 text-sm md:text-base"
                                                 >
                                                     {isLoading ? 'Saving...' : 'Save Changes'}
                                                 </button>

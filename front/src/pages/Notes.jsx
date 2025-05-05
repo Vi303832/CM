@@ -944,7 +944,7 @@ const Notes = () => {
                 )}
 
                 {/* Floating Action Buttons */}
-                <div className="fixed bottom-8 right-8 flex flex-col gap-4">
+                <div className="fixed bottom-8 right-8 flex flex-col gap-4 z-20">
                     <button
                         onClick={handleOpenDrawingModal}
                         className="bg-neutral-800 text-white p-4 rounded-full shadow-lg hover:bg-neutral-950 transition-colors cursor-pointer"
