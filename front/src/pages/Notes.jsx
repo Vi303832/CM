@@ -509,19 +509,28 @@ const Notes = () => {
 
         setUploadLoading(true);
         const formData = new FormData();
-        formData.append('image', file);
+        formData.append('file', file); // Changed from 'image' to 'file' to match backend expectation
 
         try {
             const response = await axios.post('/api/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    console.log('Upload Progress:', percentCompleted);
+                }
             });
 
-            return response.data.url;
+            if (response.data && response.data.url) {
+                return response.data.url;
+            } else {
+                throw new Error('Invalid response format');
+            }
         } catch (error) {
             console.error('Image upload error:', error);
-            showToast.error('Image upload failed');
+            const errorMessage = error.response?.data?.message || 'Image upload failed';
+            showToast.error(errorMessage);
             return null;
         } finally {
             setUploadLoading(false);

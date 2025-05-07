@@ -1,216 +1,158 @@
 import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { FaStickyNote, FaUser, FaLock, FaEnvelope } from 'react-icons/fa';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
-import { showToast } from '../utils/toast';
+import { authAPI } from '../api';
 
 const Register = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
-        password: ''
+        password: '',
+        confirmPassword: ''
     });
-    const [passwordError, setPasswordError] = useState('');
-
-    const validatePassword = (password) => {
-        if (password.length < 8) {
-            return 'Password must be at least 8 characters long';
-        }
-        if (!/(?=.*[a-z])/.test(password)) {
-            return 'Password must contain at least one lowercase letter';
-        }
-        if (!/(?=.*[A-Z])/.test(password)) {
-            return 'Password must contain at least one uppercase letter';
-        }
-        if (!/(?=.*\d)/.test(password)) {
-            return 'Password must contain at least one number';
-        }
-        if (!/(?=.*[@$!%*?&])/.test(password)) {
-            return 'Password must contain at least one special character (@$!%*?&)';
-        }
-        return '';
-    };
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-
         setFormData({
             ...formData,
-            [name]: value
+            [e.target.name]: e.target.value
         });
-
-        // Validate password as user types
-        if (name === 'password') {
-            setPasswordError(validatePassword(value));
-        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
 
-        // Final password validation before submission
-        const passwordValidationError = validatePassword(formData.password);
-        if (passwordValidationError) {
-            setPasswordError(passwordValidationError);
-            showToast.error(passwordValidationError);
+        // Validate passwords match
+        if (formData.password !== formData.confirmPassword) {
+            toast.error('Passwords do not match!');
+            setIsLoading(false);
             return;
         }
 
         try {
-            const response = await axios.post('https://zynote.onrender.com/api/auth/register', formData);
-            showToast.success("Successfully registered!");
-            navigate('/login');
-        } catch (err) {
-            showToast.error(err.response?.data?.message || "Registration failed!");
+            await authAPI.register({
+                username: formData.username,
+                email: formData.email,
+                password: formData.password
+            });
+
+            toast.success('Registration successful! Please login.');
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
+        } catch (error) {
+            console.error('Registration error:', error);
+            const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+            toast.error(errorMessage);
+        } finally {
+            setIsLoading(false);
         }
-    };
-
-    const renderPasswordStrength = () => {
-        if (!formData.password) return null;
-
-        // Calculate password strength
-        let strength = 0;
-        if (formData.password.length >= 8) strength++;
-        if (/(?=.*[a-z])/.test(formData.password)) strength++;
-        if (/(?=.*[A-Z])/.test(formData.password)) strength++;
-        if (/(?=.*\d)/.test(formData.password)) strength++;
-        if (/(?=.*[@$!%*?&])/.test(formData.password)) strength++;
-
-        let strengthClass = '';
-        let strengthText = '';
-
-        switch (strength) {
-            case 0:
-            case 1:
-                strengthClass = 'bg-red-500';
-                strengthText = 'Very Weak';
-                break;
-            case 2:
-                strengthClass = 'bg-orange-500';
-                strengthText = 'Weak';
-                break;
-            case 3:
-                strengthClass = 'bg-yellow-500';
-                strengthText = 'Moderate';
-                break;
-            case 4:
-                strengthClass = 'bg-blue-500';
-                strengthText = 'Strong';
-                break;
-            case 5:
-                strengthClass = 'bg-green-500';
-                strengthText = 'Very Strong';
-                break;
-            default:
-                break;
-        }
-
-        return (
-            <div className="mt-2">
-                <div className="flex justify-between mb-1">
-                    <span className="text-xs font-medium text-gray-700">Password Strength</span>
-                    <span className="text-xs font-medium text-gray-700">{strengthText}</span>
-                </div>
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div className={`h-full ${strengthClass}`} style={{ width: `${(strength / 5) * 100}%` }}></div>
-                </div>
-            </div>
-        );
     };
 
     return (
-        <div className="h-screen flex flex-col">
-            <Navbar />
-            <ToastContainer />
-            <main className="pt-16 h-full flex items-center justify-center bg-gray-50">
-                <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Register</h2>
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-                                Username
-                            </label>
-                            <input
-                                type="text"
-                                id="username"
-                                name="username"
-                                value={formData.username}
-                                onChange={handleChange}
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required
-                                minLength={3}
-                                maxLength={20}
-                            />
-                            <p className="text-xs text-gray-500 mt-1">Username must be between 3 and 20 characters</p>
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required
-                            />
-                        </div>
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className={`shadow appearance-none border ${passwordError ? 'border-red-500' : ''} rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-                                required
-                            />
-                            {passwordError && (
-                                <p className="text-red-500 text-xs italic mt-1">{passwordError}</p>
-                            )}
-                            <div className="text-xs text-gray-500 mt-2">
-                                <p>Password must:</p>
-                                <ul className="list-disc pl-5 mt-1">
-                                    <li className={formData.password.length >= 8 ? 'text-green-500' : ''}>Be at least 8 characters long</li>
-                                    <li className={/(?=.*[a-z])/.test(formData.password) ? 'text-green-500' : ''}>Contain at least one lowercase letter</li>
-                                    <li className={/(?=.*[A-Z])/.test(formData.password) ? 'text-green-500' : ''}>Contain at least one uppercase letter</li>
-                                    <li className={/(?=.*\d)/.test(formData.password) ? 'text-green-500' : ''}>Contain at least one number</li>
-                                    <li className={/(?=.*[@$!%*?&])/.test(formData.password) ? 'text-green-500' : ''}>Contain at least one special character (@$!%*?&)</li>
-                                </ul>
-                            </div>
-                            {renderPasswordStrength()}
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <button
-                                type="submit"
-                                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors w-full cursor-pointer"
-                            >
-                                Register
-                            </button>
-                        </div>
-                        <div className="mt-4 text-center">
-                            <p className="text-sm text-gray-600">
-                                Already have an account?{' '}
-                                <button
-                                    type="button"
-                                    onClick={() => navigate('/login')}
-                                    className="text-blue-600 hover:text-blue-800"
-                                >
-                                    Login
-                                </button>
-                            </p>
-                        </div>
-                    </form>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <ToastContainer position="top-right" autoClose={3000} />
+            <div className="max-w-md w-full space-y-8">
+                <div>
+                    <div className="flex justify-center">
+                        <FaStickyNote className="text-blue-600 text-5xl" />
+                    </div>
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                        Create your account
+                    </h2>
                 </div>
-            </main>
+                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                    <div className="rounded-md shadow-sm -space-y-px">
+                        <div className="mb-4">
+                            <label htmlFor="username" className="sr-only">Username</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <FaUser className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    id="username"
+                                    name="username"
+                                    type="text"
+                                    required
+                                    value={formData.username}
+                                    onChange={handleChange}
+                                    className="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                    placeholder="Username"
+                                />
+                            </div>
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="email" className="sr-only">Email address</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <FaEnvelope className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    required
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                    placeholder="Email address"
+                                />
+                            </div>
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="password" className="sr-only">Password</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <FaLock className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    required
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    className="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                    placeholder="Password"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label htmlFor="confirmPassword" className="sr-only">Confirm Password</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <FaLock className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    type="password"
+                                    required
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    className="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                    placeholder="Confirm Password"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
+                                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                        >
+                            {isLoading ? 'Registering...' : 'Register'}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
