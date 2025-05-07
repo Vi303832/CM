@@ -14,7 +14,7 @@ import fs from 'fs';
 import axios from 'axios';
 
 import cloudinary from './utils/cloudinary.js';
-import upload from './middleware/upload.js';
+
 import path from 'path';
 import { fileURLToPath } from 'url';
 
