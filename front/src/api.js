@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://zynote.onrender.com/api';
+const API_URL = '/api';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -16,6 +16,16 @@ api.interceptors.request.use((config) => {
     }
     return config;
 });
+
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 404) {
+            console.error('API endpoint not found:', error.config.url);
+        }
+        return Promise.reject(error);
+    }
+);
 
 // Auth API
 export const authAPI = {
@@ -86,14 +96,8 @@ export const notesAPI = {
     },
     // Summarize note and decrement usage in one call
     summarizeNote: async (text) => {
-
         try {
-
-
             const response = await api.post('/summary', { text });
-
-
-
             return {
                 summary: response.data.summary,
                 remaining: response.data.remaining,

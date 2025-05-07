@@ -512,16 +512,13 @@ const Notes = () => {
         formData.append('image', file);
 
         try {
-            const response = await axios.post('https://zynote.onrender.com/api', formData, {
+            const response = await axios.post('/api/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
-
             });
 
-
-
-            return response.data.url; // Cloudinary'den gelen URL
+            return response.data.url;
         } catch (error) {
             console.error('Image upload error:', error);
             showToast.error('Image upload failed');
