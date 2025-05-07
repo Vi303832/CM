@@ -184,30 +184,51 @@ function getNextMonday() {
 // File Upload Route
 app.post('/api/upload', upload.single('image'), async (req, res) => {
     try {
-        console.log('Dosya alındı:', req.file);
+        console.log('Request received:', {
+            file: req.file,
+            body: req.body,
+            headers: req.headers
+        });
 
         if (!req.file) {
-            console.log('Dosya yüklenmedi');
+            console.log('No file in request');
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        console.log('Cloudinary yükleniyor...');
+        console.log('File details:', {
+            originalname: req.file.originalname,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+            path: req.file.path
+        });
+
+        console.log('Cloudinary upload starting...');
         const result = await cloudinary.uploader.upload(req.file.path);
-        console.log('Cloudinary yükleme başarılı:', result);
+        console.log('Cloudinary upload successful:', result);
 
         try {
             fs.unlinkSync(req.file.path);
+            console.log('Temporary file deleted successfully');
         } catch (e) {
-            console.warn("Dosya silinemedi:", e.message);
+            console.warn("Failed to delete temporary file:", e.message);
         }
 
         res.json({ url: result.secure_url });
     } catch (error) {
-        console.error('Yükleme hatası:', error);
+        console.error('Upload error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
 
-        // Hata durumunda geçici dosyayı sil
+        // Clean up temporary file if it exists
         if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
+            try {
+                fs.unlinkSync(req.file.path);
+                console.log('Temporary file cleaned up after error');
+            } catch (e) {
+                console.warn("Failed to clean up temporary file:", e.message);
+            }
         }
 
         res.status(500).json({

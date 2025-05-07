@@ -509,7 +509,7 @@ const Notes = () => {
 
         setUploadLoading(true);
         const formData = new FormData();
-        formData.append('file', file); // Changed from 'image' to 'file' to match backend expectation
+        formData.append('image', file); // Changed back to 'image' to match backend expectation
 
         try {
             const response = await axios.post('/api/upload', formData, {
