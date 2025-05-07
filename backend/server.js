@@ -8,6 +8,7 @@ import { getSummaryUsage, decrementSummaryUsage } from './controllers/summaryCon
 import profileRoutes from './routes/profileRoutes.js';
 import { protect } from './middleware/authMiddleware.js';
 import multer from 'multer';
+import cloudinaryUpload from './middleware/cloudinaryUpload.js';
 
 import fs from 'fs';
 import axios from 'axios';
@@ -34,6 +35,8 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB Connected'))
@@ -182,55 +185,16 @@ function getNextMonday() {
 }
 
 // File Upload Route
-app.post('/api/upload', upload.single('image'), async (req, res) => {
+app.post('/api/upload', cloudinaryUpload.single('image'), async (req, res) => {
     try {
-        console.log('Request received:', {
-            file: req.file,
-            body: req.body,
-            headers: req.headers
-        });
-
         if (!req.file) {
-            console.log('No file in request');
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        console.log('File details:', {
-            originalname: req.file.originalname,
-            mimetype: req.file.mimetype,
-            size: req.file.size,
-            path: req.file.path
-        });
-
-        console.log('Cloudinary upload starting...');
-        const result = await cloudinary.uploader.upload(req.file.path);
-        console.log('Cloudinary upload successful:', result);
-
-        try {
-            fs.unlinkSync(req.file.path);
-            console.log('Temporary file deleted successfully');
-        } catch (e) {
-            console.warn("Failed to delete temporary file:", e.message);
-        }
-
-        res.json({ url: result.secure_url });
+        // req.file.path contains the Cloudinary URL
+        res.json({ url: req.file.path });
     } catch (error) {
-        console.error('Upload error details:', {
-            message: error.message,
-            stack: error.stack,
-            name: error.name
-        });
-
-        // Clean up temporary file if it exists
-        if (req.file && fs.existsSync(req.file.path)) {
-            try {
-                fs.unlinkSync(req.file.path);
-                console.log('Temporary file cleaned up after error');
-            } catch (e) {
-                console.warn("Failed to clean up temporary file:", e.message);
-            }
-        }
-
+        console.error('Upload error:', error);
         res.status(500).json({
             error: 'File upload failed',
             details: error.message
