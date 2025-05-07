@@ -149,7 +149,13 @@ app.post('/api/summary', protect, async (req, res) => {
         const response = await axios.post(
             'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
             { inputs: text },
-            { headers: { Authorization: `Bearer ${process.env.HUGGING_FACE_API_KEY}` } }
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.HUGGING_FACE_API_KEY}`,
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }
         );
 
         const summary = response.data?.summary_text || response.data[0]?.summary_text;
