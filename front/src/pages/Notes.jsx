@@ -213,12 +213,28 @@ const Notes = () => {
                     throw new Error('Invalid response format');
                 }
             } catch (err) {
+                let errorMessage = 'Failed to fetch notes';
 
-                setError('Failed to fetch notes');
-
-                if (notes.length === 0) {
-                    showToast.error('Failed to fetch notes');
+                if (err.response) {
+                    switch (err.response.status) {
+                        case 401:
+                            errorMessage = 'Please log in to view your notes';
+                            break;
+                        case 403:
+                            errorMessage = 'Your session has expired. Please log in again';
+                            break;
+                        case 404:
+                            errorMessage = 'No notes found';
+                            break;
+                        default:
+                            errorMessage = 'Unable to load notes. Please try again later';
+                    }
+                } else if (err.request) {
+                    errorMessage = 'Network error. Please check your connection';
                 }
+
+                setError(errorMessage);
+                showToast.error(errorMessage);
                 setNotes([]);
             } finally {
                 setIsLoading(false);
@@ -344,19 +360,12 @@ const Notes = () => {
         const fetchSummaryUsage = async () => {
             try {
                 const usage = await notesAPI.getSummaryUsage();
-                console.log(usage.remaining); // Correct property name
-
                 setSummaryUsage({
-                    count: usage.remaining, // Fixed typo here (remaning → remaining)
+                    count: usage.remaining,
                     nextReset: usage.nextReset
                 });
-
-                console.log(summaryUsage.nextReset)
-                // This will still show the old value because state updates are async
-                // console.log(summaryUsage.count);
-
             } catch (error) {
-                console.error('Failed to fetch summary usage:', error);
+                showToast.error('Failed to fetch summary usage');
             }
         };
 
@@ -370,7 +379,6 @@ const Notes = () => {
                 return;
             }
 
-            // Check if user has any remaining usages
             if (summaryUsage.count <= 0) {
                 showToast.error(`You've reached your weekly summary limit. Limit resets on ${summaryUsage.nextReset}`);
                 return;
@@ -381,7 +389,6 @@ const Notes = () => {
 
             const result = await notesAPI.summarizeNote(displayNote.content);
 
-            // Update the summary and usage information
             setSummary(result.summary);
             setSummaryUsage({
                 count: result.remaining,
@@ -391,15 +398,11 @@ const Notes = () => {
             setShowSummary(true);
             showToast.success(`Summary generated! You have ${result.remaining} summaries left this week.`);
         } catch (error) {
-            console.error('Summarization failed:', error);
-
-            // Handle limit reached error
             if (error.response?.status === 403) {
                 showToast.error(`${error.response.data.message}. Limit resets on ${error.response.data.nextReset}`);
                 return;
             }
 
-            // Handle other errors
             const errorMessage = error.response?.data?.error ||
                 error.response?.data?.message ||
                 error.message ||
