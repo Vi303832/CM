@@ -117,7 +117,6 @@ app.get('/api/summary/usage', protect, async (req, res) => {
 
 app.post('/api/summary', protect, async (req, res) => {
     try {
-
         const { text } = req.body;
 
         if (!text) {
@@ -127,7 +126,6 @@ app.post('/api/summary', protect, async (req, res) => {
         // 1. Get user from protection middleware
         const user = req.user;
 
-        console.log(user.summaryUsage)
         // 2. Check and reset usage if needed
         const now = new Date();
         if (!user.summaryUsage || now > new Date(user.summaryUsage.nextReset)) {
@@ -145,18 +143,40 @@ app.post('/api/summary', protect, async (req, res) => {
             });
         }
 
-        // 4. Call Hugging Face API
-        const response = await axios.post(
-            'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
-            { inputs: text },
-            {
-                headers: {
-                    Authorization: `Bearer ${process.env.HUGGING_FACE_API_KEY}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
+        // 4. Call Hugging Face API with retry logic
+        const maxRetries = 3;
+        let retryCount = 0;
+        let response;
+
+        while (retryCount < maxRetries) {
+            try {
+                response = await axios.post(
+                    'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
+                    { inputs: text },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${process.env.HUGGING_FACE_API_KEY}`,
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        timeout: 30000 // 30 second timeout
+                    }
+                );
+                break; // If successful, break the retry loop
+            } catch (error) {
+                if (error.response?.status === 503 && retryCount < maxRetries - 1) {
+                    // Model is loading, wait and retry
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    retryCount++;
+                    continue;
                 }
+                throw error; // Re-throw other errors
             }
-        );
+        }
+
+        if (!response) {
+            throw new Error('Failed to get response after retries');
+        }
 
         const summary = response.data?.summary_text || response.data[0]?.summary_text;
         if (!summary) throw new Error('Invalid response from API');
@@ -174,7 +194,26 @@ app.post('/api/summary', protect, async (req, res) => {
 
     } catch (error) {
         console.error('Summary error:', error);
-        res.status(500).json({ error: 'Failed to generate summary', details: error.message });
+
+        // Handle specific error cases
+        if (error.response?.status === 503) {
+            return res.status(503).json({
+                error: 'Model is currently loading. Please try again in a few seconds.',
+                details: error.message
+            });
+        }
+
+        if (error.code === 'ECONNABORTED') {
+            return res.status(504).json({
+                error: 'Request timed out. Please try again.',
+                details: error.message
+            });
+        }
+
+        res.status(error.response?.status || 500).json({
+            error: 'Failed to generate summary',
+            details: error.message
+        });
     }
 });
 
