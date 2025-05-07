@@ -40,16 +40,14 @@ cd zynote
 ```
 2. Client (Frontend)
 ```bash
-Copy
-Edit
+
 cd client
 npm install
 npm run dev
 ```
 3. Server (Backend)
 ```bash
-Copy
-Edit
+
 cd server
 npm install
 npm run dev
@@ -59,9 +57,7 @@ npm run dev
 server/.env dosyasını oluşturun ve aşağıdaki bilgileri doldurun:
 
 ```bash
-env
-Copy
-Edit
+
 PORT=5000
 MONGO_URI=your_mongodb_uri
 JWT_SECRET=your_secret_key
@@ -71,19 +67,21 @@ CLOUDINARY_API_SECRET=your_cloudinary_secret
 HUGGINGFACE_API_TOKEN=your_huggingface_token
 ```
 
-##Ekran Görüntüleri
+## Ekran Görüntüleri
 Aşağıdaki örnek ekran görüntülerini doğrudan README.md dosyasına GitHub linkleriyle veya görsellerle ekleyebilirsin.
 
 
 
 
 
-Lisans
+## Lisans
 Bu proje yalnızca portföy ve tanıtım amaçlı geliştirilmiştir. Herhangi bir ticari kullanım için geliştiriciden izin alınması gerekmektedir.
 
 🧑‍💻 Geliştirici: Mehmet Akif Tanyeri
+
 📧 İletişim: 
 mehmettanyeriiakif@hotmail.com
+
 www.linkedin.com/in/mehmetakiftanyeri-382458351
 
 
