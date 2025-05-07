@@ -355,7 +355,6 @@ const Notes = () => {
         }
     }, [showSummary]);
 
-
     useEffect(() => {
         const fetchSummaryUsage = async () => {
             try {
@@ -365,12 +364,16 @@ const Notes = () => {
                     nextReset: usage.nextReset
                 });
             } catch (error) {
-                showToast.error('Failed to fetch summary usage');
+                if (isDisplayModalOpen) {
+                    showToast.error('Failed to fetch summary usage');
+                }
             }
         };
 
-        fetchSummaryUsage();
-    }, []);
+        if (isDisplayModalOpen) {
+            fetchSummaryUsage();
+        }
+    }, [isDisplayModalOpen]);
 
     const handleSummarize = async () => {
         try {

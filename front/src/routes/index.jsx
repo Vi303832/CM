@@ -6,7 +6,7 @@ import Register from '../pages/Register';
 import Notes from '../pages/Notes';
 import User from '../pages/User';
 import { ProtectedRoute } from '../middleware/authMiddleware';
-
+import NotFound from '../pages/NotFound';
 const AppRoutes = () => {
     return (
         <Routes>
@@ -29,6 +29,7 @@ const AppRoutes = () => {
                     </ProtectedRoute>
                 }
             />
+            <Route path="*" element={<NotFound />} />
         </Routes>
     );
 };
