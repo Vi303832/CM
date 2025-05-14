@@ -56,6 +56,7 @@ const Notes = () => {
 
     const [imageUrl, setImageUrl] = useState('');
     const [uploadLoading, setUploadLoading] = useState(false);
+    const [showSummaryInfo, setShowSummaryInfo] = useState(true);
 
 
     // First, let's add state to track drawing status
@@ -267,6 +268,7 @@ const Notes = () => {
     const handleCardClick = (note) => {
         setDisplayNote(note);
         setIsDisplayModalOpen(true);
+        setShowSummaryInfo(true);
     };
 
     const handleEditClick = (note, e) => {
