@@ -1309,7 +1309,7 @@ const Notes = () => {
                                     >
                                         {isLoading ? "Loading.." : `${editingNote && editingNote.content && editingNote.content.startsWith('data:image')
                                             ? 'Update Drawing'
-                                            : 'Save Drawing'}`}
+                                            : 'Save Note'}`}
 
                                     </button>
                                 </div>
