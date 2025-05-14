@@ -56,7 +56,7 @@ const Notes = () => {
 
     const [imageUrl, setImageUrl] = useState('');
     const [uploadLoading, setUploadLoading] = useState(false);
-    const [showSummaryInfo, setShowSummaryInfo] = useState(true);
+    const [showSummaryInfo, setShowSummaryInfo] = useState(false);
 
 
     // First, let's add state to track drawing status
@@ -1099,42 +1099,46 @@ const Notes = () => {
                                         )}
                                     </div>
                                 </div>
-                                <button
-                                    onClick={handleSummarize}
-                                    onMouseEnter={() => setShowSummaryInfo(true)}
-                                    onMouseLeave={() => setShowSummaryInfo(false)}
-                                    disabled={isSummarizing || summaryUsage.count <= 0}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center cursor-pointer ${isSummarizing
-                                        ? 'bg-blue-300 text-white cursor-wait'
-                                        : summaryUsage.count <= 0
-                                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
-                                        }`}
-                                >
-                                    {isSummarizing && (
-                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
+                                <div className="relative flex items-center">
+                                    <button
+                                        onClick={(e) => { setShowSummaryInfo(false); handleSummarize(e); }}
+                                        onMouseEnter={() => setShowSummaryInfo(true)}
+                                        onFocus={() => setShowSummaryInfo(true)}
+                                        onMouseLeave={() => setShowSummaryInfo(false)}
+                                        onBlur={() => setShowSummaryInfo(false)}
+                                        disabled={isSummarizing || summaryUsage.count <= 0}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center cursor-pointer ${isSummarizing
+                                            ? 'bg-blue-300 text-white cursor-wait'
+                                            : summaryUsage.count <= 0
+                                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                                            }`}
+                                        tabIndex={0}
+                                    >
+                                        {isSummarizing && (
+                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        )}
+                                        {isSummarizing
+                                            ? 'Summarizing...'
+                                            : summaryUsage.count <= 0
+                                                ? `Limit reached (resets on ${summaryUsage.nextReset})`
+                                                : 'Summarize with AI'}
+                                    </button>
+                                    {showSummaryInfo && !isSummarizing && summaryUsage.count > 0 && (
+                                        <div className="absolute left-1/2 top-full z-30 mt-2 w-80 -translate-x-1/2 px-3 py-2 bg-blue-50 text-xs text-blue-700 border border-blue-200 rounded shadow-lg animate-fade-in">
+                                            <div className="flex items-center">
+                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Summarization may take a few minutes depending on the length of your note and AI service availability. <a href="https://huggingface.co/facebook/bart-large-cnn" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-800 ml-1">Model status</a>.
+                                            </div>
+                                        </div>
                                     )}
-                                    {isSummarizing
-                                        ? 'Summarizing...'
-                                        : summaryUsage.count <= 0
-                                            ? `Limit reached (resets on ${summaryUsage.nextReset})`
-                                            : 'Summarize with AI'}
-                                </button>
-                            </div>
-                            {showSummaryInfo && !isSummarizing && summaryUsage.count > 0 && (
-                                <div className="px-4 py-2 bg-blue-50 text-xs text-blue-700 border-t border-blue-100 mt-2">
-                                    <div className="flex items-center">
-                                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        Summarization may take a few minutes depending on the length of your note and AI service availability.
-                                        You can check the model status at <a href="https://huggingface.co/facebook/bart-large-cnn" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-800">huggingface.co/facebook/bart-large-cnn</a>.
-                                    </div>
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </div>
                 )}
