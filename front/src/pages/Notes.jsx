@@ -1128,12 +1128,20 @@ const Notes = () => {
                                                 : 'Summarize with AI'}
                                     </button>
                                     {showSummaryInfo && !isSummarizing && summaryUsage.count > 0 && (
-                                        <div className="absolute left-1/2 top-full z-30 mt-2 w-80 -translate-x-1/2 px-3 py-2 bg-blue-50 text-xs text-blue-700 border border-blue-200 rounded shadow-lg animate-fade-in">
-                                            <div className="flex items-center">
-                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <div className="absolute left-1/2 top-full z-50 mt-2 w-80 -translate-x-1/2 px-4 py-3 bg-white text-sm text-blue-800 border border-blue-400 rounded-lg shadow-xl animate-fade-in font-medium transition-opacity duration-200"
+                                            style={{ boxShadow: '0 4px 24px 0 rgba(0,0,0,0.12)' }}>
+                                            <div className="flex items-start">
+                                                <svg className="w-5 h-5 mr-2 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
-                                                Summarization may take a few minutes depending on the length of your note and AI service availability. <a href="https://huggingface.co/facebook/bart-large-cnn" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-800 ml-1">Model status</a>.
+                                                <span>
+                                                    Summarization may take up to a few minutes depending on note length and AI service status. <a href="https://huggingface.co/facebook/bart-large-cnn" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900 ml-1">Model status</a>.
+                                                </span>
+                                            </div>
+                                            <div className="absolute left-1/2 -top-2 w-0 h-0 -translate-x-1/2" style={{ zIndex: 51 }}>
+                                                <svg width="18" height="10" viewBox="0 0 18 10" className="block mx-auto">
+                                                    <polygon points="9,0 18,10 0,10" fill="#fff" stroke="#60a5fa" strokeWidth="1" />
+                                                </svg>
                                             </div>
                                         </div>
                                     )}
