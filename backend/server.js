@@ -159,7 +159,7 @@ app.post('/api/summary', protect, async (req, res) => {
                             Accept: 'application/json',
                             'Content-Type': 'application/json'
                         },
-                        timeout: 1200000 // 30 second timeout
+                        timeout: 4800000
                     }
                 );
                 break; // If successful, break the retry loop

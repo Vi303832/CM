@@ -1120,6 +1120,17 @@ const Notes = () => {
                                             : 'Summarize with AI'}
                                 </button>
                             </div>
+                            {!isSummarizing && summaryUsage.count > 0 && (
+                                <div className="px-4 py-2 bg-blue-50 text-xs text-blue-700 border-t border-blue-100">
+                                    <div className="flex items-center">
+                                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Summarization may take a few minutes depending on the length of your note and AI service availability.
+                                        You can check the model status at <a href="https://huggingface.co/facebook/bart-large-cnn" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-800">huggingface.co/facebook/bart-large-cnn</a>.
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
