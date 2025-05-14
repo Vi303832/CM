@@ -68,9 +68,13 @@ HUGGINGFACE_API_TOKEN=your_huggingface_token
 ```
 
 ## Ekran Görüntüleri
-Aşağıdaki örnek ekran görüntülerini doğrudan README.md dosyasına GitHub linkleriyle veya görsellerle ekleyebilirsin.
+
+![screencapture-zynote-vercel-app-notes-2025-05-14-10_26_21](https://github.com/user-attachments/assets/20580491-f649-409a-b8b3-aa806cd96838)
 
 
+![screencapture-zynote-vercel-app-2025-05-14-10_05_31](https://github.com/user-attachments/assets/33db8246-68f6-45c6-94fc-c38546bb654e)
+
+![Screenshot Capture - 2025-05-14 - 10-15-19](https://github.com/user-attachments/assets/3ebd4a58-1ec3-4a4c-8a08-8d1e45a7198e)
 
 
 
