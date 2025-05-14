@@ -1099,52 +1099,75 @@ const Notes = () => {
                                         )}
                                     </div>
                                 </div>
-                                <div className="relative flex items-center">
-                                    <button
-                                        onClick={(e) => { setShowSummaryInfo(false); handleSummarize(e); }}
-                                        onMouseEnter={() => setShowSummaryInfo(true)}
-                                        onFocus={() => setShowSummaryInfo(true)}
-                                        onMouseLeave={() => setShowSummaryInfo(false)}
-                                        onBlur={() => setShowSummaryInfo(false)}
-                                        disabled={isSummarizing || summaryUsage.count <= 0}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center cursor-pointer ${isSummarizing
-                                            ? 'bg-blue-300 text-white cursor-wait'
-                                            : summaryUsage.count <= 0
-                                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
-                                            }`}
-                                        tabIndex={0}
-                                    >
-                                        {isSummarizing && (
-                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
+                                <div className={`relative flex items-center ${showSummaryInfo ? 'flex-col gap-5 ' : ''}`}>
+                                    <div className={`relative flex items-center ${showSummaryInfo ? 'flex-col gap-5 ' : ''}`}>
+                                        {showSummaryInfo && !isSummarizing && summaryUsage.count > 0 && (
+                                            <div className="absolute bottom-full z-50 mb-2 w-80 px-4 py-3 bg-white text-sm text-blue-800 border border-blue-400 rounded-lg shadow-xl animate-fade-in font-medium transition-opacity duration-200  lg:left-[-150px] md:left-[-200px] sm:left-[-250px] "
+                                                style={{ boxShadow: '0 4px 24px 0 rgba(0,0,0,0.12)', maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
+                                                <div className="flex items-start">
+                                                    <svg className="w-5 h-5 mr-2 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    <span>
+                                                        Summarization may take up to a few minutes depending on note length and AI service status. <a href="https://huggingface.co/facebook/bart-large-cnn" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900 ml-1">Model status</a>.
+                                                    </span>
+                                                </div>
+                                                <div className="absolute left-1/2 bottom-[-8px] w-0 h-0 -translate-x-1/2" style={{ zIndex: 51 }}>
+                                                    <svg width="18" height="10" viewBox="0 0 18 10" className="block mx-auto">
+                                                        <polygon points="9,10 0,0 18,0" fill="#fff" stroke="#60a5fa" strokeWidth="1" />
+                                                    </svg>
+                                                </div>
+                                            </div>
                                         )}
-                                        {isSummarizing
-                                            ? 'Summarizing...'
-                                            : summaryUsage.count <= 0
-                                                ? `Limit reached (resets on ${summaryUsage.nextReset})`
-                                                : 'Summarize with AI'}
-                                    </button>
-                                    {showSummaryInfo && !isSummarizing && summaryUsage.count > 0 && (
-                                        <div className="absolute left-1/2 top-full z-50 mt-2 w-80 -translate-x-1/2 px-4 py-3 bg-white text-sm text-blue-800 border border-blue-400 rounded-lg shadow-xl animate-fade-in font-medium transition-opacity duration-200"
-                                            style={{ boxShadow: '0 4px 24px 0 rgba(0,0,0,0.12)' }}>
-                                            <div className="flex items-start">
-                                                <svg className="w-5 h-5 mr-2 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        <button
+                                            onClick={(e) => {
+                                                if (window.innerWidth <= 768) {
+                                                    setShowSummaryInfo(!showSummaryInfo);
+                                                } else {
+                                                    setShowSummaryInfo(false);
+                                                }
+                                                handleSummarize(e);
+                                            }}
+                                            onMouseEnter={() => window.innerWidth > 768 && setShowSummaryInfo(true)}
+                                            onFocus={() => window.innerWidth > 768 && setShowSummaryInfo(true)}
+                                            onMouseLeave={() => window.innerWidth > 768 && setShowSummaryInfo(false)}
+                                            onBlur={() => window.innerWidth > 768 && setShowSummaryInfo(false)}
+                                            disabled={isSummarizing || summaryUsage.count <= 0}
+                                            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center cursor-pointer ${isSummarizing
+                                                ? 'bg-blue-300 text-white cursor-wait'
+                                                : summaryUsage.count <= 0
+                                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                                                }`}
+                                            tabIndex={0}
+                                        >
+                                            {isSummarizing && (
+                                                <svg className="animate-spin -ml-1 mr-2 h-3 w-3 sm:h-4 sm:w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                <span>
-                                                    Summarization may take up to a few minutes depending on note length and AI service status. <a href="https://huggingface.co/facebook/bart-large-cnn" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900 ml-1">Model status</a>.
-                                                </span>
+                                            )}
+                                            {isSummarizing
+                                                ? 'Summarizing...'
+                                                : summaryUsage.count <= 0
+                                                    ? `Limit reached`
+                                                    : 'Summarize with AI'}
+                                        </button>
+                                        {showSummaryInfo && window.innerWidth <= 768 && !isSummarizing && summaryUsage.count > 0 && (
+                                            <div className="fixed inset-x-0 bottom-20 mx-auto z-50 w-64 sm:w-80 px-3 py-2 sm:px-4 sm:py-3 bg-white text-xs sm:text-sm text-blue-800 border border-blue-400 rounded-lg shadow-xl animate-fade-in font-medium transition-opacity duration-200"
+                                                style={{ boxShadow: '0 4px 24px 0 rgba(0,0,0,0.12)', maxWidth: '90%', maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
+                                                <div className="flex items-start">
+                                                    <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    <span>
+                                                        Summarization may take up to a few minutes depending on note length and AI service status. <a href="https://huggingface.co/facebook/bart-large-cnn" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900 ml-1">Model status</a>.
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="absolute left-1/2 -top-2 w-0 h-0 -translate-x-1/2" style={{ zIndex: 51 }}>
-                                                <svg width="18" height="10" viewBox="0 0 18 10" className="block mx-auto">
-                                                    <polygon points="9,0 18,10 0,10" fill="#fff" stroke="#60a5fa" strokeWidth="1" />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
